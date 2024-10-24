@@ -1,4 +1,3 @@
-#define _GNU_SOURCE 1
 #include <math.h>
 #include <ctype.h>
 #include <limits.h>
@@ -13,17 +12,22 @@
 #include "khashl.h"
 #include "utils.h"
 #include "version.h"
+#include "iplot.h"
 #include "izlib.h"
 
 #define DM_CC 5
 #define DM_MAX 12
-#define MAX_RL 35
+#define MIN_RL 35
+
+#define DEF_IS 0x400
+#define MAX_IS 0xFFFF
+#define MAX_TRIES 0xFFFF
 
 KSEQ_INIT(gzFile, gzread)
 // argument struct
 typedef struct
 {
-	char *in, *out, *ref;
+	char *in, *out, *ref, *isz, *dep;
 } arg_t;
 
 // bam auxillary struct
@@ -64,9 +68,14 @@ void get_sc(const bam1_t *b, sc_t *sc);
 bool bam_is_cc(const bam1_t *b);
 void bam_get_cigar_str(bam1_t *b, kstring_t *s);
 int get_nm(const bam1_t *b);
-
+// expected and observed dimmer frequencies
 float exp_dmf(const char *fa);
 float obs_dmf(const char *bam, const faidx_t *fai);
+// insert size stats
+void isize(const char *bam, const faidx_t *fai, int *is);
+void lrsd(const int *is, const int n, sd_t *sd);
+// parse command line arguments
 void prs_arg(int argc, char **argv, arg_t *arg);
+// print ESS equation
 void dump_ess_fn();
 void usage();

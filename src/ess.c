@@ -12,6 +12,21 @@ int main(int argc, char *argv[])
 	if (!(fai = fai_load(arg->ref)))
 		error("Error loading reference index of [%s]\n", arg->ref);
 	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, fai);
+	if (arg->isz)
+	{
+		int is[MAX_IS] = {0};
+		sd_t sd = {0};
+		isize(arg->in, fai, is);
+		lrsd(is, MAX_IS, &sd);
+		cairo_surface_t *sf = cairo_svg_surface_create(arg->isz, WIDTH, HEIGHT);
+		cairo_t *cr = cairo_create(sf);
+		cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
+		// draw lines
+		do_drawing(cr, is, DEF_IS, &sd);
+		// clean canvas
+		cairo_surface_destroy(sf);
+		cairo_destroy(cr);
+	}
 	if (fai)
 		fai_destroy(fai);
 	// output
@@ -28,6 +43,7 @@ static ko_longopt_t long_options[] = {
 	{ "in",                        ko_required_argument, 'i' },
 	{ "out",                       ko_required_argument, 'o' },
 	{ "ref",                       ko_required_argument, 'r' },
+	{ "plot",                      ko_required_argument, 'p' },
 	{ "help",                      ko_no_argument, 'h' },
 	{ "version",                   ko_no_argument, 'v' },
 	{ NULL, 0, 0 }
@@ -37,7 +53,7 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 {
 	int c = 0;
 	ketopt_t opt = KETOPT_INIT;
-	const char *opt_str = "i:o:r:hv";
+	const char *opt_str = "i:o:r:p:hv";
 	while ((c = ketopt(&opt, argc, argv, 1, opt_str, long_options)) >= 0)
 	{
 		switch (c)
@@ -45,6 +61,7 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 			case 'i': arg->in = opt.arg; break;
 			case 'o': arg->out = opt.arg; break;
 			case 'r': arg->ref = opt.arg; break;
+			case 'p': arg->isz = opt.arg; break;
 			case 'h': usage(); break;
 			case 'v':
 				if (strlen(BRANCH_COMMIT))
@@ -80,7 +97,7 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 	}
 	else if (access(arg->ref, R_OK))
 		error("Error: specified reference [%s] is inaccessible!\n", arg->ref);
-	char *bai, *fai;
+	char *bai, *fai, *svg;
 	asprintf(&bai, "%s.bai", arg->in);
 	if (access(bai, R_OK))
 	{
@@ -92,6 +109,11 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 	{
 		free(fai);
 		error("Error: fasta's index file (.fai) is required, please use samtools faidx to create it.\n");
+	}
+	if (arg->isz && !ends_with(arg->isz, ".svg"))
+	{
+		asprintf(&svg, "%s.svg", arg->isz);
+		arg->isz = svg;
 	}
 }
 
@@ -361,6 +383,102 @@ float obs_dmf(const char *bam, const faidx_t *fai)
 	return dmf;
 }
 
+void isize(const char *bam, const faidx_t *fai, int *is)
+{
+	int is1, tries = MAX_TRIES;
+	samFile *fp = sam_open(bam, "r");
+	bam_hdr_t *hdr = sam_hdr_read(fp);
+	bam1_t *b = bam_init1();
+	while(sam_read1(fp, hdr, b) >= 0)
+	{
+		bam1_core_t *c = &b->core;
+		if (c->flag & (BAM_FQCFAIL | BAM_FREAD2 | BAM_FUNMAP | BAM_FSECONDARY | BAM_FSUPPLEMENTARY))
+			continue;
+		if (!faidx_has_seq(fai, sam_hdr_tid2name(hdr, c->tid)))
+			continue;
+		if (c->flag & BAM_FPAIRED)
+		{
+			if (b->core.mtid != b->core.tid)
+				continue;
+			else
+			{
+				if ((is1 = b->core.isize) <= 0 || is1 >= MAX_IS)
+					continue;
+				++is[is1];
+				if (!--tries) break;
+			}
+		}
+		else
+		{
+			if ((is1 = b->core.l_qseq) < MAX_IS)
+			{
+				++is[is1];
+				if (!--tries) break;
+			}
+		}
+	}
+	bam_destroy1(b);
+	bam_hdr_destroy(hdr);
+	hts_close(fp);
+}
+
+void lrsd(const int *is, const int n, sd_t *sd)
+{
+	int i, j = 0, t = 0, pk = 0, cm = 0, rm = 0;
+	// record insert sizes
+	double *x = calloc(n, sizeof(double)), *y = calloc(n, sizeof(double));
+	for (i = 1; i < n; ++i)
+	{
+		x[i] = i;
+		y[i] = is[i];
+		t += is[i];
+		if (is[i] > cm)
+		{
+			cm = is[i];
+			pk = i;
+		}
+	}
+	t /= 2;
+	for (i = 1; i < n; ++i)
+	{
+		if(is[i])
+		{
+			if(j <= t && t <= j + is[i])
+				break;
+			j += is[i];
+		}
+	}
+	int lc = 0, rc = 0;
+	double lsd = 0, rsd = 0;
+	for (i = 1, j = 0; i < MAX_IS; ++i)
+	{
+		rm = i;
+		j += is[i];
+		if (j >= t * 2 * 0.98) break;
+	}
+	for (i = 1; i <= rm; ++i)
+	{
+		int delta = i - pk;
+		if (delta < 0)
+		{
+			lsd += is[i] * pow(delta, 2);
+			lc += is[i];
+		}
+		else
+		{
+			rsd += is[i] * pow(delta, 2);
+			rc += is[i];
+		}
+	}
+	lc = lc > 1 ? lc : 1;
+	rc = rc > 1 ? rc : 1;
+	lsd = sqrt(lsd / lc);
+	rsd = sqrt(rsd / rc);
+	sd->pk = pk;
+	sd->lsd = lsd;
+	sd->rsd = rsd;
+}
+
 void dump_ess_fn()
 {
 	printf("%50s\n", "obs(CC_end_freq + GG_end_freq)");
@@ -388,6 +506,7 @@ void usage()
 	puts("  -i, --in  \e[3mFILE\e[0m   Input BAM file with bai index (\e[31mrequired\e[0m)");
 	puts("  -o, --out \e[3mSTR\e[0m    Output ESS value to file \e[90m[stdout]\e[0m");
 	puts("  -r, --ref \e[3mFILE\e[0m   Reference fasta with fai index \e[90m[auto]\e[0m");
+	puts("  -p, --plot \e[3mFILE\e[0m  Insert size plot svg file \e[90m[none]\e[0m");
 	putchar('\n');
 	puts("  -h, --help       Display this message");
 	puts("  -v, --version    Display program version");
