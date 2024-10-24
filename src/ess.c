@@ -293,7 +293,6 @@ bool bam_is_cc(const bam1_t *b)
 	char *seq = (char *)bam_get_seq(b);
 	sc_t sc = {0, 0};
 	get_sc(b, &sc);
-	// TODO check first in pair
 	// ignore fragments with 5'-softclips
 	if (b->core.flag & BAM_FREVERSE)
 	{
@@ -346,7 +345,7 @@ float obs_dmf(const char *bam, const faidx_t *fai)
 	while(sam_read1(fp, hdr, b) >= 0)
 	{
 		bam1_core_t *c = &b->core;
-		if (c->flag & (BAM_FQCFAIL | BAM_FUNMAP | BAM_FSECONDARY | BAM_FSUPPLEMENTARY))
+		if (c->flag & (BAM_FQCFAIL | BAM_FREAD2 | BAM_FUNMAP | BAM_FSECONDARY | BAM_FSUPPLEMENTARY))
 			continue;
 		if (!faidx_has_seq(fai, sam_hdr_tid2name(hdr, c->tid)))
 			continue;
