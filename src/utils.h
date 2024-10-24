@@ -18,12 +18,8 @@
 #include <ftw.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #ifdef __linux__
 #include <sys/auxv.h>
 #endif
@@ -32,8 +28,6 @@
 
 extern const char *__progname;
 
-#define MAX_IP (32)
-#define MAX_IF (16)
 #define min(x,y) ((x)<(y)?(x):(y))
 #define max(x,y) ((x)>(y)?(x):(y))
 #define BUL "\e[90m\xE2\x97\x8F\e[0m"
@@ -82,14 +76,6 @@ KHASHL_CMAP_INIT(KH_LOCAL, s2_t, s2, cstr_t, cstr_t, kh_hash_str, kh_eq_str)
 // unsigned to struct array hash table
 KHASHL_MAP_INIT(KH_LOCAL, hs_t, hs, uint32_t, u64_t *, kh_hash_uint32, kh_eq_generic)
 
-typedef struct
-{
-	int d;
-	int h;
-	int m;
-	int s;
-} timer;
-
 // insert key-val pair into hash
 void kh_ins(kh_t *h, const uint64_t n, const int64_t v);
 void hh_ins(hh_t *h, const uint32_t j, const uint32_t n, const int32_t v);
@@ -119,14 +105,6 @@ void u64s(uint64_t x, char* s, size_t k);
 uint64_t s64u(const char* s);
 void print_kmer(const kh_t *h, const int kl, const int n);
 
-void exec(void *_a);
-int clean(const char *path);
-void chomp(char *str);
-int is_empty(const char *fn);
-int is_dir(const char *path);
-bool is_sql3(const char *fn);
-int mkdir_p(const char *path);
-char *decode(char *a);
 void chkfile(int num, ...);
 bool begins_with(const char *str, const char *prefix);
 bool ends_with(const char *str, const char *sfx);
@@ -135,15 +113,4 @@ void reverse(char *str);
 void complement(char *str);
 char *revcom(const char *str);
 char *strrstr(const char *haystack, const char *needle);
-unsigned long mix(unsigned long a, unsigned long b, unsigned long c);
-void gen_random(char *s, const int len);
-char *tmpstr(const char *pfx);
-void flt_round(const unsigned n, char *flt);
-
-void warn(const char *format, ...);
-void info(const char *format, ...);
-void logging(const char *func, const char *msg);
 void horiz(const int n);
-void get_ip(char *ip);
-void runtime(const time_t start, const char *func);
-void dmp_cmd(const int argc, char **argv, const char *version, const char *prefix);
