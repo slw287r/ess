@@ -1,7 +1,7 @@
 ARCH := $(shell arch)
 ifeq ($(ARCH),x86_64)
 CFLAGS=-Wall -O3 -static
-LIBS=-lhts -lpthread -ldeflate -lisal -lcairo -lfontconfig -lpixman-1 -lfreetype -lzip -lbz2 -llzma -lpng -lm -ldl
+LIBS=-lhts -lpthread -ldeflate -lisal -lcairo -lfontconfig -lpixman-1 -lfreetype -lzip -lbz2 -llzma -lpng -lm -ldl -lz
 else
 CFLAGS=-Wall -O3 -march=native
 LIBS=-lhts -lisal -lm -lcairo

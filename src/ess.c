@@ -212,8 +212,8 @@ float get_gc(const bam1_t *b)
 }
 
 /*
- * @PG  ID:bwa       PN:bwa       VN:0.7.18-r1243-dirty  CL:bwa mem -at8 /path/to/ref.fa /path/to/fq.gz -R
- * @PG  ID:bwa-mem2  PN:bwa-mem2  VN:2.2.1a              CL:bwa-mem2 mem -v1 -zt8 -h64 /path/to/ref.fa /path/to/fq.gz
+ * @PG  ID:bwa       PN:bwa       VN:0.7.18  CL:bwa mem -at8 /path/to/ref.fa /path/to/fq.gz -R
+ * @PG  ID:bwa-mem2  PN:bwa-mem2  VN:2.2.1a  CL:bwa-mem2 mem -v1 -zt8 -h64 /path/to/ref.fa /path/to/fq.gz
  */
 void bam_get_ref(bam_hdr_t *h, char *ref)
 {
@@ -293,6 +293,7 @@ bool bam_is_cc(const bam1_t *b)
 	char *seq = (char *)bam_get_seq(b);
 	sc_t sc = {0, 0};
 	get_sc(b, &sc);
+	// TODO check first in pair
 	// ignore fragments with 5'-softclips
 	if (b->core.flag & BAM_FREVERSE)
 	{
