@@ -280,7 +280,7 @@ void draw_is(cairo_t *cr, const int *is, const int n)
 		ymax = (int)fmax(ymax, is[i]);
 	double h = pow(10, floor(log10(ymax)));
 	h = (int)(ymax / h + 1) * h;
-	cairo_move_to(cr, (double)xmin / xmax, 1);
+	cairo_move_to(cr, (double)xmin / xmax, 1 - is[xmax] / h);
 	if (xmax)
 	{
 		for (i = xmin; i < xmax; ++i)
