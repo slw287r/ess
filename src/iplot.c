@@ -114,7 +114,7 @@ void draw_y2lab(cairo_t *cr, const char *ylab)
 
 void draw_xticks(cairo_t *cr, const double xmax)
 {
-	int x;
+	int x, m;
 	double w1 = 1.0, w2 = 1.0;
 	cairo_device_to_user_distance(cr, &w1, &w2);
 	cairo_set_line_width(cr, fmin(w1, w2) / 2.0);
@@ -126,7 +126,7 @@ void draw_xticks(cairo_t *cr, const double xmax)
 	char buf[sizeof(uint64_t) * 8 + 1];
 	cairo_text_extents(cr, "m", &ext);
 	double y_offset = ext.height;
-	for (x = 0; x <= xmax; x += 10)
+	for (x = 0; x <= xmax; x += 50)
 	{
 		sprintf(buf, "%d", x);
 		cairo_set_source_rgb(cr, 0.16, 0.16, 0.16);
@@ -138,6 +138,13 @@ void draw_xticks(cairo_t *cr, const double xmax)
 		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 		cairo_move_to(cr, DIM_X * x / xmax, DIM_Y);
 		cairo_line_to(cr, DIM_X * x / xmax, DIM_Y - y_offset / 2);
+		for (m = 10; m <= 40; m += 10)
+		{
+			cairo_set_line_width(cr, fmin(w1, w2) / 3.0);
+			cairo_move_to(cr, DIM_X * (x + m) / xmax, DIM_Y);
+			cairo_line_to(cr, DIM_X * (x + m) / xmax, DIM_Y - y_offset / 3);
+			cairo_set_line_width(cr, fmin(w1, w2) / 2.0);
+		}
 		cairo_stroke(cr);
 		if (x != 0 && x != xmax)
 		{

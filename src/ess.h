@@ -20,7 +20,7 @@
 #define DM_MAX 12
 #define MIN_RL 35
 
-#define DEF_IS 0x400
+#define DEF_IS 0x200
 #define MAX_IS 0xFFFF
 #define MAX_TRIES 0xFFFF
 
