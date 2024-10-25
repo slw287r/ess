@@ -20,7 +20,7 @@ typedef struct
 } sd_t;
 
 // plot dimensions
-#define MARGIN 55
+#define MARGIN 65
 #define DIM_X 605
 #define DIM_Y 165
 #define WIDTH (DIM_X + MARGIN)
@@ -33,7 +33,8 @@ void draw_arrow(cairo_t *cr, double start_x, double start_y, double end_x, doubl
 void draw_xlab(cairo_t *cr, const char *xlab);
 void draw_ylab(cairo_t *cr, const char *ylab);
 void draw_y2lab(cairo_t *cr, const char *ylab);
+void draw_xticks(cairo_t *cr, const double xmax);
 void draw_yticks(cairo_t *cr, const double ymax, const bool logscale);
 void draw_y2ticks(cairo_t *cr, const double ymax);
 void draw_is(cairo_t *cr, const int *is, const int n);
-void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd);
+void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd, const char *sname);

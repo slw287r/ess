@@ -53,6 +53,7 @@ int is_gzip(const char *fn);
 // sequence accession ID to sequence length from fa index
 int acc2len(const faidx_t *fai, const char *acc);
 
+void get_sname(const char *bam, char *sname);
 void bam_get_ref(bam_hdr_t *h, char *ref);
 
 /**

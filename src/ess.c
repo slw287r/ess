@@ -18,11 +18,16 @@ int main(int argc, char *argv[])
 		sd_t sd = {0};
 		isize(arg->in, fai, is);
 		lrsd(is, MAX_IS, &sd);
-		cairo_surface_t *sf = cairo_svg_surface_create(arg->isz, WIDTH, HEIGHT);
+		cairo_surface_t *sf = cairo_svg_surface_create(arg->isz, WIDTH * 1.02, HEIGHT);
 		cairo_t *cr = cairo_create(sf);
 		cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
-		// draw lines
-		do_drawing(cr, is, DEF_IS, &sd);
+		char sname[NAME_MAX];
+		get_sname(arg->in, sname);
+		int i = MAX_IS - 1;
+		while (!is[i--]);
+		++i;
+		++i;
+		do_drawing(cr, is, fmin(DEF_IS, i), &sd, sname);
 		// clean canvas
 		cairo_surface_destroy(sf);
 		cairo_destroy(cr);
@@ -129,6 +134,13 @@ int is_gzip(const char *fn)
 			gzip = 1;
 	fclose(fp);
 	return gzip;
+}
+
+void get_sname(const char *bam, char *sam)
+{
+	char *p = NULL;
+	strncpy(sam, (p = strrchr(bam, '/')) ? p + 1 : bam, NAME_MAX);
+	*strrchr(sam, '.') = '\0';
 }
 
 int get_nm(const bam1_t *b)
