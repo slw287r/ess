@@ -12,13 +12,13 @@ int main(int argc, char *argv[])
 	if (!(fai = fai_load(arg->ref)))
 		error("Error loading reference index of [%s]\n", arg->ref);
 	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, fai);
-	if (arg->isz)
+	if (arg->plot)
 	{
 		int is[MAX_IS] = {0};
 		sd_t sd = {0};
 		isize(arg->in, fai, is);
 		lrsd(is, MAX_IS, &sd);
-		cairo_surface_t *sf = cairo_svg_surface_create(arg->isz, WIDTH * 1.02, HEIGHT);
+		cairo_surface_t *sf = cairo_svg_surface_create(arg->plot, WIDTH * 1.02, HEIGHT);
 		cairo_t *cr = cairo_create(sf);
 		cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
 		char sname[NAME_MAX];
@@ -66,7 +66,7 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 			case 'i': arg->in = opt.arg; break;
 			case 'o': arg->out = opt.arg; break;
 			case 'r': arg->ref = opt.arg; break;
-			case 'p': arg->isz = opt.arg; break;
+			case 'p': arg->plot = opt.arg; break;
 			case 'h': usage(); break;
 			case 'v':
 				if (strlen(BRANCH_COMMIT))
@@ -115,10 +115,10 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 		free(fai);
 		error("Error: fasta's index file (.fai) is required, please use samtools faidx to create it.\n");
 	}
-	if (arg->isz && !ends_with(arg->isz, ".svg"))
+	if (arg->plot && !ends_with(arg->plot, ".svg"))
 	{
-		asprintf(&svg, "%s.svg", arg->isz);
-		arg->isz = svg;
+		asprintf(&svg, "%s.svg", arg->plot);
+		arg->plot = svg;
 	}
 }
 

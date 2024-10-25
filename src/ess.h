@@ -28,7 +28,7 @@ KSEQ_INIT(gzFile, gzread)
 // argument struct
 typedef struct
 {
-	char *in, *out, *ref, *isz, *dep;
+	char *in, *out, *ref, *plot, *dep;
 } arg_t;
 
 // bam auxillary struct
