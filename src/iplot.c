@@ -265,30 +265,26 @@ void draw_y2ticks(cairo_t *cr, const double ymax)
 void draw_is(cairo_t *cr, const int *is, const int n)
 {
 	int i;
-	double w1 = 1.0, w2 = 1.0, x = 0, y = 0, x1, y1;
+	double w1 = 1.0, w2 = 1.0;
 	cairo_device_to_user_distance(cr, &w1, &w2);
 	cairo_set_line_width(cr, fmin(w1, w2));
 	cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 	cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
 	cairo_set_source_rgb(cr, 87 / 255.0, 122 / 255.0, 166 / 255.0);
 	cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
-	int xmax = n, ymax = 0;
-	for (i = xmax; i >= 0; --i)
-		ymax = fmax(ymax, is[i]);
+	int xmin = 0, xmax = n, ymax = 0;
+	for (xmin = 0; xmin <= n; ++xmin)
+		if (is[xmin])
+			break;
+	for (i = 0; i <= n; ++i)
+		ymax = (int)fmax(ymax, is[i]);
 	double h = pow(10, floor(log10(ymax)));
-	ymax = (int)(ymax / h + 1) * h;
+	h = (int)(ymax / h + 1) * h;
+	cairo_move_to(cr, (double)xmin / xmax, 1);
 	if (xmax)
 	{
-		// draw cpu history
-		for (i = 0; i < xmax; ++i)
-		{
-			x1 = (double)i / xmax;
-			y1 = (double)is[i] / ymax;
-			cairo_move_to(cr, x, 1 - y);
-			cairo_line_to(cr, x1, 1 - y1);
-			x = x1;
-			y = y1;
-		}
+		for (i = xmin; i < xmax; ++i)
+			cairo_line_to(cr, (double)i / xmax, 1 - (double)is[i] / h);
 		cairo_save(cr);
 		cairo_scale(cr, 1.0, (double)DIM_X / DIM_Y);
 		cairo_stroke(cr);
