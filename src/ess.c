@@ -256,7 +256,7 @@ void bam_get_ref(bam_hdr_t *h, char *ref)
 	if (sam_hdr_find_line_id(h, "PG", "ID", "bwa-mem2", &ks) &&
 			sam_hdr_find_line_id(h, "PG", "ID", "bwa", &ks))
 		return;
-	const char sfx[][16] = {".fasta.gz", ".fasta", ".fa.gz", ".fa", ".fna.gz", ".fna"};
+	const char sfx[][16] = {".fasta.gz ", ".fasta ", ".fa.gz ", ".fa ", ".fna.gz ", ".fna "};
 	char *p = NULL, *q = NULL;
 	for (i = 0; i < 6; ++i)
 	{
@@ -264,7 +264,7 @@ void bam_get_ref(bam_hdr_t *h, char *ref)
 		{
 			q = p;
 			while (!isspace(*q--));
-			strncpy(ref, q + 2, p - q + strlen(sfx[i]) - 2);
+			strncpy(ref, q + 2, p - q + strlen(sfx[i]) - 3);
 			break;
 		}
 	}
