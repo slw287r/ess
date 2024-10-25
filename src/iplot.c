@@ -280,16 +280,13 @@ void draw_is(cairo_t *cr, const int *is, const int n)
 		ymax = (int)fmax(ymax, is[i]);
 	double h = pow(10, floor(log10(ymax)));
 	h = (int)(ymax / h + 1) * h;
-	cairo_move_to(cr, (double)xmin / xmax, 1 - (double)is[xmax] / h);
-	if (xmax)
-	{
-		for (i = xmin + 1; i < xmax; ++i)
-			cairo_line_to(cr, (double)i / xmax, 1 - (double)is[i] / h);
-		cairo_save(cr);
-		cairo_scale(cr, 1.0, (double)DIM_X / DIM_Y);
-		cairo_stroke(cr);
-		cairo_restore(cr);
-	}
+	cairo_move_to(cr, (double)xmin / xmax, 1 - (double)is[xmin] / h);
+	for (i = xmin + 1; i < xmax; ++i)
+		cairo_line_to(cr, (double)i / xmax, 1 - (double)is[i] / h);
+	cairo_save(cr);
+	cairo_scale(cr, 1.0, (double)DIM_X / DIM_Y);
+	cairo_stroke(cr);
+	cairo_restore(cr);
 }
 
 void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd, const char *sname)
