@@ -92,7 +92,7 @@ void draw_ylab(cairo_t *cr, const char *ylab)
 	cairo_translate(cr, MARGIN / 2.0, HEIGHT / 2.0); // translate origin to the center
 	cairo_rotate(cr, 3 * M_PI / 2.0);
 	cairo_text_extents(cr, ylab, &ext);
-	cairo_move_to(cr, MARGIN / 5.0, -MARGIN);
+	cairo_move_to(cr, MARGIN / 2.0 - ext.width / 2, -MARGIN * 1.25);
 	cairo_show_text(cr, ylab);
 	cairo_restore(cr);
 }
@@ -299,7 +299,6 @@ void draw_is(cairo_t *cr, const int *is, const int n)
 void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd, const char *sname)
 {
 	int i = 0;
-	char *a = NULL;
 	cairo_set_source_rgb (cr, 0, 0, 0);
 	//cairo_translate(cr, MARGIN / 2, MARGIN / 2.0);
 	cairo_translate(cr, MARGIN, MARGIN / 2.0);
@@ -325,18 +324,16 @@ void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd, const c
 	cairo_move_to(cr, x, y);
 	cairo_show_text(cr, zlab);
 	// xlab
-	char xlab[] = "Insert size (bp)";
+	char xlab[] = "Insert Sizes (bp)";
 	draw_xlab(cr, xlab);
 	// ylab
 	char ylab[] = "Frequency";
 	draw_ylab(cr, ylab);
 	// draw isize
 	int xmax = n, ymax = 0;
-	printf("xmax: %d\n", xmax);
 	for (i = 0; i <= n; ++i)
 		ymax = fmax(ymax, is[i]);
 	// axis
-	//draw_arrow(cr, 0, DIM_Y*1.005, DIM_X, DIM_Y*1.005); // xaxis
 	double w1 = 1.0, w2 = 1.0;
 	cairo_device_to_user_distance(cr, &w1, &w2);
 	cairo_set_line_width(cr, fmin(w1, w2) / 1.25);
@@ -352,89 +349,4 @@ void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd, const c
 	cairo_scale(cr, DIM_X, DIM_Y);
 	draw_is(cr, is, xmax);
 	cairo_restore(cr);
-	/* draw runtime at bottom right
-	stoa(mns[n - 1]->ts - mns[0]->ts, &a);
-	asprintf(&a, "Runtime: %s", a);
-	cairo_set_font_size(cr, 8.0);
-	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_text_extents(cr, a, &ext);
-	x = DIM_X - ext.width - ext.x_bearing;
-	y = DIM_Y + ext.height * 3 + ext.y_bearing; // bottom right
-	cairo_move_to(cr, x, y);
-	cairo_show_text(cr, a);
-	*/
-	/* start time
-	asprintf(&a, "Start: %s", st);
-	cairo_text_extents(cr, a, &ext);
-	x = ext.x_bearing;
-	y = DIM_Y + ext.height * 3 + ext.y_bearing; // bottom left
-	cairo_move_to(cr, x, y);
-	cairo_show_text(cr, a);
-	*/
-	// legend
-	/* max cpu usage
-	asprintf(&a, "%.*f", cpu_max < 1 ? 2 : 0, cpu_max);
-	cairo_text_extents(cr, a, &ext);
-	cairo_set_font_size(cr, 8.0);
-	cairo_set_source_rgb(cr, 87 / 255.0, 122 / 255.0, 166 / 255.0);
-	x = -ext.x_bearing * 4 - ext.width;
-	y = ext.height;
-	cairo_move_to(cr, x, y);
-	cairo_show_text(cr, a);
-	// max memory
-	if (mem_max < 1)
-	{
-		double mem_max_m = mem_max * 1000;
-		if (mem_max_m < 1)
-			asprintf(&a, "<1M");
-		else
-			asprintf(&a, "%.0fM", mem_max_m);
-	}
-	else
-		asprintf(&a, "%.0fG", mem_max);
-	cairo_text_extents(cr, a, &ext);
-	cairo_set_source_rgb(cr, 166 / 255.0, 122 / 255.0, 87 / 255.0);
-	//x = DIM_X - ext.width + ext.x_bearing;
-	x = DIM_X + ext.x_bearing;
-	cairo_move_to(cr, x, y);
-	cairo_show_text(cr, a);
-	*/
-	/* draw legend
-	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-	asprintf(&a, "—CPU");
-	cairo_text_extents(cr, a, &ext);
-	x = DIM_X - ext.width * 1.25;
-	y = ext.height - ext.y_bearing * 1.5;
-	cairo_move_to(cr, x, y);
-	cairo_text_path(cr, a);
-	cairo_set_source_rgb(cr, 87 / 255.0, 122 / 255.0, 166 / 255.0);
-	cairo_fill_preserve (cr);
-	cairo_set_source_rgb (cr, 1, 1, 1); // white border
-	cairo_set_line_width (cr, .35);
-	cairo_stroke (cr);
-	
-	asprintf(&a, "—RSS");
-	x = DIM_X - ext.width * 1.25;
-	y = ext.height - ext.y_bearing * 3.0;
-	cairo_move_to(cr, x, y);
-	cairo_text_path(cr, a);
-	cairo_set_source_rgb(cr, 166 / 255.0, 122 / 255.0, 87 / 255.0);
-	cairo_fill_preserve (cr);
-	cairo_set_source_rgb (cr, 1, 1, 1); // white border
-	cairo_set_line_width (cr, .35);
-	cairo_stroke (cr);
-
-	asprintf(&a, "—SHR");
-	x = DIM_X - ext.width * 1.25;
-	y = ext.height - ext.y_bearing * 4.5;
-	cairo_move_to(cr, x, y);
-	cairo_text_path(cr, a);
-	cairo_set_source_rgb(cr, 218 / 255.0, 165 / 255.0, 32 / 255.0);
-	cairo_fill_preserve (cr);
-	cairo_set_source_rgb (cr, 1, 1, 1); // white border
-	cairo_set_line_width (cr, .35);
-	cairo_stroke (cr);
-	*/
-	if (a)
-		free(a);
 }
