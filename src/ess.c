@@ -151,100 +151,6 @@ int get_nm(const bam1_t *b)
 	return nm_i;
 }
 
-void bam_get_cigar_str(bam1_t *b, kstring_t *s)
-{
-	int i;
-	s->l = 0;
-	uint32_t *c = bam_get_cigar(b);
-	int n = b->core.n_cigar;
-	for (i = 0; i < n; ++i)
-	{
-		int op = bam_cigar_op(c[i]);
-		int ol = bam_cigar_oplen(c[i]);
-		switch (op)
-		{
-			case BAM_CMATCH: // M
-				ksprintf(s, "%dM", ol);
-				break;
-			case BAM_CHARD_CLIP: // H
-				ksprintf(s, "%dH", ol);
-				break;
-			case BAM_CREF_SKIP: // S
-			case BAM_CSOFT_CLIP: // S
-				ksprintf(s, "%dS", ol);
-				break;
-			case BAM_CDEL: // D
-				ksprintf(s, "%dD", ol);
-				break;
-			case BAM_CPAD: // P
-				ksprintf(s, "%dP", ol);
-				break;
-			case BAM_CINS: // I
-				ksprintf(s, "%dI", ol);
-				break;
-			 default:
-				break;
-		}
-	}
-}
-
-int get_match_base(const bam1_t *b)
-{
-	int i = 0, match_base = 0;
-	uint32_t *c = bam_get_cigar(b);
-	int o = b->core.n_cigar;
-	for(i = 0; i < o; ++i)
-		if (bam_cigar_op(c[i]) == BAM_CMATCH)
-			match_base += bam_cigar_oplen(c[i]);
-	return match_base;
-}
-
-int get_mm(const bam1_t *b, const unsigned a, const unsigned z)
-{
-	int pos = 0, countout = 0;
-	const bam1_core_t *c = &b->core;
-	bool fwd = !(c->flag & BAM_FREVERSE);
-	char *md = NULL;
-	uint8_t *md_p = bam_aux_get(b, "MD");
-	if (md_p) md = bam_aux2Z(md_p);
-	while (*md)
-	{
-		if (isdigit(*md))
-		{
-			uint8_t *endptr;
-			long i = strtol((char *)md, (char **)&endptr, 10);
-			md = (char *)endptr;
-			pos += i;
-			continue;
-		}
-		if (*md == '^') // deletion.
-		{
-			while (*++md && !isdigit(*md))
-				continue;
-			continue;
-		}
-		// substitution
-		if ((fwd && (pos <= a || pos >= c->l_qseq - z)) ||
-			(!fwd && (pos <= z || pos >= c->l_qseq - a)))
-		{
-			char *mm = md;
-			while (!isdigit(*mm++))
-				++countout;
-		}
-		md++;
-	}
-	return get_nm(b) - countout;
-}
-
-float get_gc(const bam1_t *b)
-{
-	int i, l_qseq = b->core.l_qseq, bases[16] = {0};
-	char *seq = (char *)bam_get_seq(b);
-	for (i = 0; i < l_qseq; ++i)
-		++bases[bam_seqi(seq, i)];
-	return l_qseq ? 1.0 * (bases[2] + bases[4]) / l_qseq : 0.0f;
-}
-
 /*
  * @PG  ID:bwa       PN:bwa       VN:0.7.18  CL:bwa mem -at8 /path/to/ref.fa /path/to/fq.gz -R
  * @PG  ID:bwa-mem2  PN:bwa-mem2  VN:2.2.1a  CL:bwa-mem2 mem -v1 -zt8 -h64 /path/to/ref.fa /path/to/fq.gz
@@ -269,25 +175,6 @@ void bam_get_ref(bam_hdr_t *h, char *ref)
 		}
 	}
 	if (ks.m) free(ks.s);
-}
-
-/* return the read, reverse complemented if necessary */
-char *bam_get_seq_str(const bam1_t *b)
-{
-	int n, len = b->core.l_qseq + 1;
-	char *read = calloc(1, len);
-	char *seq = (char *)bam_get_seq(b);
-	if (!read) return NULL;
-	for (n = 0; n < b->core.l_qseq; ++n)
-	{
-		if (b->core.flag & BAM_FREVERSE)
-			read[n] = seq_nt16_str[seq_comp_table[bam_seqi(seq,n)]];
-		else
-			read[n] = seq_nt16_str[bam_seqi(seq,n)];
-	}
-	if (b->core.flag & BAM_FREVERSE)
-		reverse(read);
-	return read;
 }
 
 void get_sc(const bam1_t *b, sc_t *sc)
@@ -503,7 +390,7 @@ void usage()
 {
 	struct winsize w;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-	int wx = min(60, w.ws_col);
+	int wx = fmin(60, w.ws_col);
 	horiz(wx);
 	char title[] = "\e[1mCalculate End-Signature-Score (ESS) from BAM file\e[0m";
 	int title_len = strlen("Calculate End-Signature-Score (ESS) from BAM file");

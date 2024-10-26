@@ -31,13 +31,6 @@ typedef struct
 	char *in, *out, *ref, *plot, *dep;
 } arg_t;
 
-// bam auxillary struct
-typedef struct
-{
-	samFile *fp;
-	bam_hdr_t *hdr;
-} aux_t;
-
 int8_t seq_comp_table[16] = {
 	0,  8, 4, 12,
 	2, 10, 6, 14,
@@ -57,18 +50,9 @@ int acc2len(const faidx_t *fai, const char *acc);
 void get_sname(const char *bam, char *sname);
 void bam_get_ref(bam_hdr_t *h, char *ref);
 
-/**
- * @brief  get query sequence in base characters
- *
- * @param b  pointer to bam1_t struct
- *
- * @return   query sequence; needs to be freed by the invoker
- */
-char *bam_get_seq_str(const bam1_t *b);
 // check if the 5'-end is the CC signature
 void get_sc(const bam1_t *b, sc_t *sc);
 bool bam_is_cc(const bam1_t *b);
-void bam_get_cigar_str(bam1_t *b, kstring_t *s);
 int get_nm(const bam1_t *b);
 // expected and observed dimmer frequencies
 float exp_dmf(const char *fa);

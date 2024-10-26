@@ -200,17 +200,17 @@ void draw_yticks(cairo_t *cr, const double ymax, const bool logscale)
 	}
 	else
 	{
-		double h = pow(10, floor(log10(ymax)));
-		h = (int)(ymax / h + 1) * h;
+		sp_t sp = {0, 0};
+		step_and_peak(ymax, &sp);
 		cairo_text_extents(cr, "m", &ext);
 		double x_offset = ext.width;
-		for (i = 0; i <= 5; ++i)
+		for (i = 0; i <= sp.peak / sp.step; ++i)
 		{
-			sprintf(buf, "%.0f", 0.2 * i * h);
+			sprintf(buf, "%.0f", i * sp.step);
 			cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
 			cairo_text_extents(cr, buf, &ext);
 			x = -ext.width - x_offset / 2.5;
-			y = (double)i / 5;
+			y = i * sp.step;
 			cairo_set_source_rgb(cr, 0.16, 0.16, 0.16);
 			cairo_move_to(cr, x, DIM_Y - y * DIM_Y + ext.height / 2);
 			cairo_show_text(cr, buf);
@@ -219,7 +219,7 @@ void draw_yticks(cairo_t *cr, const double ymax, const bool logscale)
 			cairo_move_to(cr, 0, DIM_Y - y * DIM_Y);
 			cairo_line_to(cr, x_offset * .5, DIM_Y - y * DIM_Y);
 			cairo_stroke(cr);
-			if (i != 0 && i != 5)
+			if (i != 0 && i != sp.peak / sp.step)
 			{
 				cairo_set_dash(cr, dashes, ndash, 0);
 				cairo_move_to(cr, x_offset * .75, DIM_Y - y * DIM_Y);
