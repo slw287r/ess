@@ -18,6 +18,7 @@
 
 #define DM_CC 5
 #define DM_MAX 12
+#define MM_MAX 10
 #define MIN_RL 35
 
 #define DEF_IS 500
@@ -29,6 +30,7 @@ KSEQ_INIT(gzFile, gzread)
 typedef struct
 {
 	char *in, *out, *ref, *plot, *dep;
+	int mis;
 } arg_t;
 
 int8_t seq_comp_table[16] = {
@@ -56,7 +58,7 @@ bool bam_is_cc(const bam1_t *b);
 int get_nm(const bam1_t *b);
 // expected and observed dimmer frequencies
 float exp_dmf(const char *fa);
-float obs_dmf(const char *bam, const faidx_t *fai);
+float obs_dmf(const char *bam, const int mis, const faidx_t *fai);
 // insert size stats
 void isize(const char *bam, const faidx_t *fai, int *is);
 void lrsd(const int *is, const int n, sd_t *sd);

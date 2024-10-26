@@ -4,6 +4,7 @@ int main(int argc, char *argv[])
 {
 	setenv("FONTCONFIG_PATH", "/etc/fonts", 1);
 	arg_t *arg = calloc(1, sizeof(arg_t));
+	arg->mis = MM_MAX;
 	if (argc == 1)
 		usage();
 	prs_arg(argc, argv, arg);
@@ -11,7 +12,7 @@ int main(int argc, char *argv[])
 	faidx_t *fai = NULL;
 	if (!(fai = fai_load(arg->ref)))
 		error("Error loading reference index of [%s]\n", arg->ref);
-	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, fai);
+	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, arg->mis, fai);
 	if (arg->plot)
 	{
 		int i, is[MAX_IS] = {0};
@@ -48,6 +49,7 @@ static ko_longopt_t long_options[] = {
 	{ "in",                        ko_required_argument, 'i' },
 	{ "out",                       ko_required_argument, 'o' },
 	{ "ref",                       ko_required_argument, 'r' },
+	{ "mis",                       ko_required_argument, 'm' },
 	{ "plot",                      ko_required_argument, 'p' },
 	{ "help",                      ko_no_argument, 'h' },
 	{ "version",                   ko_no_argument, 'v' },
@@ -58,7 +60,7 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 {
 	int c = 0;
 	ketopt_t opt = KETOPT_INIT;
-	const char *opt_str = "i:o:r:p:hv";
+	const char *opt_str = "i:o:r:m:p:hv";
 	while ((c = ketopt(&opt, argc, argv, 1, opt_str, long_options)) >= 0)
 	{
 		switch (c)
@@ -66,6 +68,7 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 			case 'i': arg->in = opt.arg; break;
 			case 'o': arg->out = opt.arg; break;
 			case 'r': arg->ref = opt.arg; break;
+			case 'm': arg->mis = atoi(opt.arg); break;
 			case 'p': arg->plot = opt.arg; break;
 			case 'h': usage(); break;
 			case 'v':
@@ -102,6 +105,8 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 	}
 	else if (access(arg->ref, R_OK))
 		error("Error: specified reference [%s] is inaccessible!\n", arg->ref);
+	if (arg->mis < 0)
+		error("Error: invalid mismatch value specified [%d]\n", arg->mis);
 	char *bai, *fai, *svg;
 	asprintf(&bai, "%s.bai", arg->in);
 	if (access(bai, R_OK))
@@ -255,7 +260,7 @@ float exp_dmf(const char *fa)
 	return dmf;
 }
 
-float obs_dmf(const char *bam, const faidx_t *fai)
+float obs_dmf(const char *bam, const int mis, const faidx_t *fai)
 {
 	float dmf = 0.0f;
 	uint64_t mtf = 0llu, tot = 0llu;
@@ -270,7 +275,7 @@ float obs_dmf(const char *bam, const faidx_t *fai)
 			continue;
 		if (!faidx_has_seq(fai, sam_hdr_tid2name(hdr, c->tid)))
 			continue;
-		if (get_nm(b) >= 10) // FIXME
+		if (get_nm(b) > mis)
 			continue;
 		++tot;
 		mtf += bam_is_cc(b);
@@ -404,6 +409,7 @@ void usage()
 	puts(BUL " \e[1mOptions\e[0m:");
 	puts("  -i, --in  \e[3mFILE\e[0m   Input BAM file with bai index (\e[31mrequired\e[0m)");
 	puts("  -o, --out \e[3mSTR\e[0m    Output ESS value to file \e[90m[stdout]\e[0m");
+	printf("  -m, --mis \e[3mINT\e[0m   Maximum mismatch allower \e[90m[%d]\e[0m\n", MM_MAX);
 	puts("  -r, --ref \e[3mFILE\e[0m   Reference fasta with fai index \e[90m[auto]\e[0m");
 	puts("  -p, --plot \e[3mFILE\e[0m  Insert size plot svg file \e[90m[none]\e[0m");
 	putchar('\n');
