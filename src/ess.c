@@ -17,9 +17,6 @@ int main(int argc, char *argv[])
 		int i, is[MAX_IS] = {0};
 		sd_t sd = {0};
 		isize(arg->in, fai, is);
-		// debug is
-		for (i = 0; i < 300; ++i)
-			printf("%d\n", is[i]);
 		lrsd(is, MAX_IS, &sd);
 		cairo_surface_t *sf = cairo_svg_surface_create(arg->plot, WIDTH * 1.02, HEIGHT);
 		cairo_t *cr = cairo_create(sf);
