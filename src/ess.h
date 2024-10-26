@@ -18,7 +18,7 @@
 
 #define DM_CC 5
 #define DM_MAX 12
-#define MM_MAX 10
+#define MM_MAX 5
 #define MIN_RL 35
 
 #define DEF_IS 500
