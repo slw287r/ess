@@ -211,7 +211,7 @@ void draw_yticks(cairo_t *cr, const double ymax, const bool logscale)
 			cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
 			cairo_text_extents(cr, buf, &ext);
 			x = -ext.width - x_offset / 2.5;
-			y = i * sp.step;
+			y = i * sp.step / sp.peak;
 			cairo_set_source_rgb(cr, 0.16, 0.16, 0.16);
 			cairo_move_to(cr, x, DIM_Y - y * DIM_Y + ext.height / 2);
 			cairo_show_text(cr, buf);
