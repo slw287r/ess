@@ -93,7 +93,6 @@ void step_and_peak(const double n, sp_t *sp)
 	int i;
 	int m = log10(n);
 	sp->peak = pow(10, m);
-	printf("%d\t%f\n", m, sp->peak);
 	for (i = 0; i < 10; ++i)
 		if ((sp->peak += pow(10, m - 1)) >= n)
 			break;

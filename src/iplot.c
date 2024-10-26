@@ -202,6 +202,7 @@ void draw_yticks(cairo_t *cr, const double ymax, const bool logscale)
 	{
 		sp_t sp = {0, 0};
 		step_and_peak(ymax, &sp);
+		printf("%f\t%f\n", sp.peak, sp.step);
 		cairo_text_extents(cr, "m", &ext);
 		double x_offset = ext.width;
 		for (i = 0; i <= sp.peak / sp.step; ++i)
