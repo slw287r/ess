@@ -14,16 +14,19 @@ int main(int argc, char *argv[])
 	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, fai);
 	if (arg->plot)
 	{
-		int is[MAX_IS] = {0};
+		int i, is[MAX_IS] = {0};
 		sd_t sd = {0};
 		isize(arg->in, fai, is);
+		// debug is
+		for (i = 0; i < 300; ++i)
+			printf("%d\n", is[i]);
 		lrsd(is, MAX_IS, &sd);
 		cairo_surface_t *sf = cairo_svg_surface_create(arg->plot, WIDTH * 1.02, HEIGHT);
 		cairo_t *cr = cairo_create(sf);
 		cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
 		char sname[NAME_MAX];
 		get_sname(arg->in, sname);
-		int i = MAX_IS - 1;
+		i = MAX_IS - 1;
 		while (!is[i--]);
 		++i;
 		++i;
