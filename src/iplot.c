@@ -138,7 +138,7 @@ void draw_xticks(cairo_t *cr, const double xmax)
 		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 		cairo_move_to(cr, DIM_X * x / xmax, DIM_Y);
 		cairo_line_to(cr, DIM_X * x / xmax, DIM_Y - y_offset / 2);
-		for (m = 10; m <= 40; m += 10)
+		for (m = 10; m <= 40 && m <= xmax - 10; m += 10)
 		{
 			cairo_set_line_width(cr, fmin(w1, w2) / 3.0);
 			cairo_move_to(cr, DIM_X * (x + m) / xmax, DIM_Y);
