@@ -342,7 +342,7 @@ void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd, const c
 	cairo_move_to(cr, 0, 0);
 	cairo_line_to(cr, 0, DIM_Y); // yaxis
 	// yticks
-	sp_t sp = {0, 0};
+	sp_t sp = {0.0f, 0.0f};
 	step_and_peak(ymax, &sp);
 	draw_xticks(cr, xmax);
 	draw_yticks(cr, &sp, false);

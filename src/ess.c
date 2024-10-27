@@ -18,9 +18,10 @@ int main(int argc, char *argv[])
 		int i, is[MAX_IS] = {0};
 		sd_t sd = {0};
 		isize(arg->in, fai, is);
-		// debug is
+		/* dbg is
 		for (i = 0; i < DEF_IS; ++i)
 			printf("%d\t%d\n", i, is[i]);
+		*/
 		lrsd(is, MAX_IS, &sd);
 		cairo_surface_t *sf = cairo_svg_surface_create(arg->plot, WIDTH * 1.02, HEIGHT);
 		cairo_t *cr = cairo_create(sf);
@@ -29,8 +30,7 @@ int main(int argc, char *argv[])
 		get_sname(arg->in, sname);
 		i = MAX_IS - 1;
 		while (!is[i--]);
-		++i;
-		++i;
+		++i; ++i;
 		do_drawing(cr, is, fmin(DEF_IS, i), &sd, sname);
 		// clean canvas
 		cairo_surface_destroy(sf);

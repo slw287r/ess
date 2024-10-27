@@ -90,13 +90,19 @@ bool ends_with(const char *str, const char *sfx)
 
 void step_and_peak(const double n, sp_t *sp)
 {
-	int i;
-	int m = log10(n);
-	sp->peak = pow(10, m);
-	for (i = 0; i < 10; ++i)
-		if ((sp->peak += pow(10, m - 1)) >= n)
-			break;
-	sp->step = 5 * pow(10, m - 1) / 2;
+	sp->peak = pow(10, floor(log10(n)));
+	while (sp->peak < n)
+		sp->peak += pow(10, floor(log10(n)));
+	double step = sp->peak / 10.0;
+	double mag = pow(10, floor(log10(step)));
+	if (step / mag <= 1)
+		sp->step = 1 * mag;
+	else if (step / mag <= 2)
+		sp->step = 2 * mag;
+	else if (step / mag <= 5)
+		sp->step = 5 * mag;
+	else
+		sp->step = 10 * mag;
 }
 
 void horiz(const int _n)
