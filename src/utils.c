@@ -92,7 +92,7 @@ void step_and_peak(const double n, sp_t *sp)
 {
 	sp->peak = pow(10, floor(log10(n)));
 	while (sp->peak < n)
-		sp->peak += pow(10, floor(log10(n)));
+		sp->peak += pow(10, floor(log10(n)) - 1);
 	double step = sp->peak / 10.0;
 	double mag = pow(10, floor(log10(step)));
 	if (step / mag <= 1)
