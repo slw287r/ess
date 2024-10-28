@@ -325,7 +325,7 @@ void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd,
 		cairo_show_text(cr, title);
 		// subtitle
 		cairo_set_font_size(cr, 12.0);
-		cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_ITALIC, CAIRO_FONT_WEIGHT_BOLD);
+		cairo_select_font_face(cr, "serif", CAIRO_FONT_SLANT_ITALIC, CAIRO_FONT_WEIGHT_BOLD);
 		cairo_text_extents(cr, sub, &ext);
 		x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
 		y = ext.height / 2 + ext.y_bearing * 1.25;
@@ -338,7 +338,10 @@ void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd,
 	cairo_set_font_size(cr, 10.0);
 	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
 	cairo_text_extents(cr, zlab, &ext);
-	x = ext.x_bearing * 5;
+	if (sd->pk >= n / 2.0)
+		x = ext.x_bearing * 5;
+	else
+		x = DIM_X - ext.width - ext.x_bearing * 5;
 	y = ext.height / 2 - ext.y_bearing;
 	cairo_move_to(cr, x, y);
 	cairo_show_text(cr, zlab);
