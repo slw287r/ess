@@ -204,9 +204,17 @@ void draw_yticks(cairo_t *cr, const sp_t *sp, const bool logscale)
 	{
 		cairo_text_extents(cr, "m", &ext);
 		double x_offset = ext.width;
+		// get precision of step
+		int p = 0;
+		double step = sp->step;
+		while (step != (int)step)
+		{
+			++p;
+			step *= 10;
+		}
 		for (i = 0; i <= sp->peak / sp->step; ++i)
 		{
-			sprintf(buf, "%.0f", i * sp->step);
+			sprintf(buf, "%.*f", p, i * sp->step);
 			cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
 			cairo_text_extents(cr, buf, &ext);
 			x = -ext.width - x_offset / 2.5;
