@@ -296,7 +296,8 @@ void draw_is(cairo_t *cr, const int *is, const double peak, const int n)
 	cairo_restore(cr);
 }
 
-void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd, const char *sname)
+void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd,
+		const char *title, const char *sub)
 {
 	int i = 0;
 	cairo_set_source_rgb (cr, 0, 0, 0);
@@ -308,11 +309,29 @@ void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd, const c
 	// title
 	cairo_set_font_size(cr, 13.0);
 	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-	cairo_text_extents(cr, sname, &ext);
-	x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
-	y = ext.height / 2 + ext.y_bearing * 1.5;
-	cairo_move_to(cr, x, y);
-	cairo_show_text(cr, sname);
+	cairo_text_extents(cr, title, &ext);
+	if (!sub)
+	{
+		x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
+		y = ext.height / 2 + ext.y_bearing * 1.5;
+		cairo_move_to(cr, x, y);
+		cairo_show_text(cr, title);
+	}
+	else
+	{
+		x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
+		y = ext.height / 2 + ext.y_bearing * 3;
+		cairo_move_to(cr, x, y);
+		cairo_show_text(cr, title);
+		// subtitle
+		cairo_set_font_size(cr, 12.0);
+		cairo_select_font_face(cr, "serif", CAIRO_FONT_SLANT_ITALIC, CAIRO_FONT_WEIGHT_BOLD);
+		cairo_text_extents(cr, sub, &ext);
+		x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
+		y = ext.height / 2 + ext.y_bearing * 1.25;
+		cairo_move_to(cr, x, y);
+		cairo_show_text(cr, sub);
+	}
 	// zlab
 	char zlab[NAME_MAX];
 	sprintf(zlab, "Mode: %d SD (-%.0f/+%.0f)", sd->pk, sd->lsd, sd->rsd);

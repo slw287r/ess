@@ -37,4 +37,5 @@ void draw_xticks(cairo_t *cr, const double xmax);
 void draw_yticks(cairo_t *cr, const sp_t *sp, const bool logscale);
 void draw_y2ticks(cairo_t *cr, const double ymax);
 void draw_is(cairo_t *cr, const int *is, const double peak, const int n);
-void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd, const char *sname);
+void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd,
+		const char *title, const char *sub);

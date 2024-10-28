@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 		i = MAX_IS - 1;
 		while (!is[i--]);
 		++i; ++i;
-		do_drawing(cr, is, fmin(DEF_IS, i), &sd, sname);
+		do_drawing(cr, is, fmin(DEF_IS, i), &sd, sname, arg->sub);
 		// clean canvas
 		cairo_surface_destroy(sf);
 		cairo_destroy(cr);
@@ -54,6 +54,7 @@ static ko_longopt_t long_options[] = {
 	{ "ref",                       ko_required_argument, 'r' },
 	{ "mis",                       ko_required_argument, 'm' },
 	{ "plot",                      ko_required_argument, 'p' },
+	{ "sub",                       ko_required_argument, 's' },
 	{ "help",                      ko_no_argument, 'h' },
 	{ "version",                   ko_no_argument, 'v' },
 	{ NULL, 0, 0 }
@@ -63,7 +64,7 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 {
 	int c = 0;
 	ketopt_t opt = KETOPT_INIT;
-	const char *opt_str = "i:o:r:m:p:hv";
+	const char *opt_str = "i:o:r:m:p:s:hv";
 	while ((c = ketopt(&opt, argc, argv, 1, opt_str, long_options)) >= 0)
 	{
 		switch (c)
@@ -73,6 +74,7 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 			case 'r': arg->ref = opt.arg; break;
 			case 'm': arg->mis = atoi(opt.arg); break;
 			case 'p': arg->plot = opt.arg; break;
+			case 's': arg->sub = opt.arg; break;
 			case 'h': usage(); break;
 			case 'v':
 				if (strlen(BRANCH_COMMIT))
@@ -412,9 +414,10 @@ void usage()
 	puts(BUL " \e[1mOptions\e[0m:");
 	puts("  -i, --in  \e[3mFILE\e[0m   Input BAM file with bai index (\e[31mrequired\e[0m)");
 	puts("  -o, --out \e[3mSTR\e[0m    Output ESS value to file \e[90m[stdout]\e[0m");
-	printf("  -m, --mis \e[3mINT\e[0m   Maximum mismatch allower \e[90m[%d]\e[0m\n", MM_MAX);
+	printf("  -m, --mis \e[3mINT\e[0m    Maximum mismatch allower \e[90m[%d]\e[0m\n", MM_MAX);
 	puts("  -r, --ref \e[3mFILE\e[0m   Reference fasta with fai index \e[90m[auto]\e[0m");
 	puts("  -p, --plot \e[3mFILE\e[0m  Insert size plot svg file \e[90m[none]\e[0m");
+	puts("  -s, --sub \e[3mFILE\e[0m   Sub-title of insert size plot \e[90m[none]\e[0m");
 	putchar('\n');
 	puts("  -h, --help       Display this message");
 	puts("  -v, --version    Display program version");

@@ -16,7 +16,7 @@ ess: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 test: ess
-	$^ -i ../dat/toy.bam -r ../dat/ref.fna.gz -p ../dat/toy.svg
+	$^ -i ../dat/toy.bam -r ../dat/ref.fna.gz -p ../dat/toy.svg -s 'E. coli'
 
 clean:
 	rm -f ess *.o
