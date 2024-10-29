@@ -54,7 +54,18 @@ void bam_get_ref(bam_hdr_t *h, char *ref);
 
 // check if the 5'-end is the CC signature
 void get_sc(const bam1_t *b, sc_t *sc);
-bool bam_is_cc(const bam1_t *b);
+
+/*
+ * 5'-----cc------------------gg----3'     Ref
+ *
+ *     5' cc------------------gg 3'   cfDNA fragments
+ *     3' gg------------------cc 5'
+ *
+ *        cc--->   or    <---cc       SE
+ *
+ *        cc--->    +    <---cc       PE
+ **/
+bool bam_is_cc(const bam1_t *b, bool *skip);
 int get_nm(const bam1_t *b);
 // expected and observed dimmer frequencies
 float exp_dmf(const char *fa);

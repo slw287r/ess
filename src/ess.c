@@ -42,7 +42,10 @@ int main(int argc, char *argv[])
 	FILE *fo = arg->out ? fopen(arg->out, "w") : stdout;
 	if (!fo)
 		error("Failed to create output file [%s]\n", arg->out ? arg->out : "stdout");
-	fprintf(fo, "exp\t%f\nobs\t%f\no/e\t%f\n", exp / 2, obs, exp ? obs / exp * 2: 0);
+	//R1CC
+	//fprintf(fo, "exp\t%f\nobs\t%f\no/e\t%f\n", exp / 2, obs, exp ? obs / exp * 2: 0);
+	// R1CC+GG
+	fprintf(fo, "exp\t%f\nobs\t%f\no/e\t%f\n", exp, obs, exp ? obs / exp: 0);
 	fclose(fo);
 	free(arg);
 	return 0;
@@ -218,10 +221,10 @@ void get_sc(const bam1_t *b, sc_t *sc)
 	}
 }
 
-/* return the read, reverse complemented if necessary */
-bool bam_is_cc(const bam1_t *b)
+bool bam_is_cc(const bam1_t *b, bool *skip)
 {
 	int i, j = 0;
+	*skip = false;
 	char dm[3] = {'\0'};
 	char *seq = (char *)bam_get_seq(b);
 	sc_t sc = {0, 0};
@@ -230,7 +233,10 @@ bool bam_is_cc(const bam1_t *b)
 	if (b->core.flag & BAM_FREVERSE)
 	{
 		if (sc.right)
+		{
+			*skip = true;
 			return false;
+		}
 		for (i = b->core.l_qseq - 1; i > b->core.l_qseq - 3; --i)
 			dm[j++] = seq_nt16_str[seq_comp_table[bam_seqi(seq, i)]];
 		if (!strncmp(dm, "GG", 2))
@@ -239,7 +245,10 @@ bool bam_is_cc(const bam1_t *b)
 	else
 	{
 		if (sc.left)
+		{
+			*skip = true;
 			return false;
+		}
 		for (i = 0; i < 2; ++i)
 			dm[j++] = seq_nt16_str[bam_seqi(seq, i)];
 		if (!strncmp(dm, "CC", 2))
@@ -270,6 +279,7 @@ float exp_dmf(const char *fa)
 
 float obs_dmf(const char *bam, const int mis, const faidx_t *fai)
 {
+	bool skip;
 	float dmf = 0.0f;
 	uint64_t mtf = 0llu, tot = 0llu;
 	// read bam for obs dmf
@@ -279,14 +289,14 @@ float obs_dmf(const char *bam, const int mis, const faidx_t *fai)
 	while(sam_read1(fp, hdr, b) >= 0)
 	{
 		bam1_core_t *c = &b->core;
-		if (c->flag & (BAM_FQCFAIL | BAM_FREAD2 | BAM_FUNMAP | BAM_FSECONDARY | BAM_FSUPPLEMENTARY))
+		if (c->flag & (BAM_FQCFAIL | BAM_FUNMAP | BAM_FSECONDARY | BAM_FSUPPLEMENTARY))
 			continue;
 		if (!faidx_has_seq(fai, sam_hdr_tid2name(hdr, c->tid)))
 			continue;
 		if (get_nm(b) > mis)
 			continue;
-		++tot;
-		mtf += bam_is_cc(b);
+		mtf += bam_is_cc(b, &skip) * (c->flag & BAM_FPAIRED ? 1 : 2);
+		tot += !skip * (bool)(c->flag & BAM_FREAD1);
 	}
 	bam_destroy1(b);
 	bam_hdr_destroy(hdr);
