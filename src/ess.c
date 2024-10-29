@@ -125,10 +125,12 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 		free(fai);
 		error("Error: fasta's index file (.fai) is required, please use samtools faidx to create it.\n");
 	}
+	free(bai);
+	free(fai);
 	if (arg->plot && !ends_with(arg->plot, ".svg"))
 	{
 		asprintf(&svg, "%s.svg", arg->plot);
-		arg->plot = svg;
+		arg->plot = svg; // mem leak
 	}
 }
 
