@@ -42,9 +42,6 @@ int main(int argc, char *argv[])
 	FILE *fo = arg->out ? fopen(arg->out, "w") : stdout;
 	if (!fo)
 		error("Failed to create output file [%s]\n", arg->out ? arg->out : "stdout");
-	//R1CC
-	//fprintf(fo, "exp\t%f\nobs\t%f\no/e\t%f\n", exp / 2, obs, exp ? obs / exp * 2: 0);
-	// R1CC+GG
 	fprintf(fo, "exp\t%f\nobs\t%f\no/e\t%f\n", exp, obs, exp ? obs / exp: 0);
 	fclose(fo);
 	free(arg);
