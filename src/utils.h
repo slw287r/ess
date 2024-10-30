@@ -51,5 +51,6 @@ void u64s(uint64_t x, char* s, size_t k);
 uint64_t s64u(const char* s);
 void print_kmer(const kh_t *h, const int kl, const int n);
 void step_and_peak(const double n, sp_t *sp);
+int strlen_wo_esc(const char *str);
 bool ends_with(const char *str, const char *sfx);
 void horiz(const int n);

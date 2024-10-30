@@ -78,6 +78,31 @@ void print_kmer(const kh_t *h, const int kl, const int n)
 	}
 }
 
+int strlen_wo_esc(const char *str)
+{
+	int length = 0;
+	while (*str != '\0')
+	{
+		// Check if this is the start of an ANSI escape sequence (ESC [ ... m)
+		if (*str == '\033' && *(str + 1) == '[')
+		{
+			// Move past \033[
+			str += 2;
+			// Skip until we reach 'm', which ends the ANSI sequence
+			while (*str != '\0' && *str != 'm')
+				str++;
+			// Move past 'm' if we found it
+			if (*str == 'm')
+				str++;
+			continue;
+		}
+		// Count visible characters
+		length++;
+		str++;
+	}
+	return length;
+}
+
 bool ends_with(const char *str, const char *sfx)
 {
 	int ret = 0;

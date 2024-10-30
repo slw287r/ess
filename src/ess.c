@@ -409,7 +409,7 @@ void usage()
 	int wx = fmin(60, w.ws_col);
 	horiz(wx);
 	char title[] = "\e[1mCalculate End-Signature-Score (ESS) from BAM file\e[0m";
-	int title_len = strlen("Calculate End-Signature-Score (ESS) from BAM file");
+	int title_len = strlen_wo_esc(title);
 	printf("%*.*s\n", (int)((wx - title_len) / 2 + strlen(title)), (int)strlen(title), title);
 	putchar('\n');
 	dump_ess_fn();
@@ -418,7 +418,7 @@ void usage()
 	printf("%s \e[1mUsage\e[0m: \e[1;31m%s\e[0;0m \e[1;90m[options]\e[0;0m -i <bam> -o <tsv>\n", BUL, __progname);
 	putchar('\n');
 	puts(BUL " \e[1mOptions\e[0m:");
-	puts("  -i, --in  \e[3mFILE\e[0m   Input BAM file with bai index (\e[31mrequired\e[0m)");
+	puts("  -i, --in  \e[3mFILE\e[0m   Input BAM file with bai index");
 	puts("  -o, --out \e[3mSTR\e[0m    Output ESS value to file \e[90m[stdout]\e[0m");
 	printf("  -m, --mis \e[3mINT\e[0m    Maximum mismatch allowed \e[90m[%d]\e[0m\n", MM_MAX);
 	puts("  -r, --ref \e[3mFILE\e[0m   Reference fasta with fai index \e[90m[auto]\e[0m");
