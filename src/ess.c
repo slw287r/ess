@@ -420,7 +420,7 @@ void usage()
 	puts(BUL " \e[1mOptions\e[0m:");
 	puts("  -i, --in  \e[3mFILE\e[0m   Input BAM file with bai index (\e[31mrequired\e[0m)");
 	puts("  -o, --out \e[3mSTR\e[0m    Output ESS value to file \e[90m[stdout]\e[0m");
-	printf("  -m, --mis \e[3mINT\e[0m    Maximum mismatch allower \e[90m[%d]\e[0m\n", MM_MAX);
+	printf("  -m, --mis \e[3mINT\e[0m    Maximum mismatch allowed \e[90m[%d]\e[0m\n", MM_MAX);
 	puts("  -r, --ref \e[3mFILE\e[0m   Reference fasta with fai index \e[90m[auto]\e[0m");
 	puts("  -p, --plot \e[3mFILE\e[0m  Insert size plot svg file \e[90m[none]\e[0m");
 	puts("  -s, --sub \e[3mFILE\e[0m   Sub-title of insert size plot \e[90m[none]\e[0m");
