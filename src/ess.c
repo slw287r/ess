@@ -236,8 +236,6 @@ bool bam_is_cc(const bam1_t *b, bool *skip)
 		}
 		for (i = b->core.l_qseq - 1; i > b->core.l_qseq - 3; --i)
 			dm[j++] = seq_nt16_str[seq_comp_table[bam_seqi(seq, i)]];
-		if (!strncmp(dm, "GG", 2))
-			return true;
 	}
 	else
 	{
@@ -248,10 +246,8 @@ bool bam_is_cc(const bam1_t *b, bool *skip)
 		}
 		for (i = 0; i < 2; ++i)
 			dm[j++] = seq_nt16_str[bam_seqi(seq, i)];
-		if (!strncmp(dm, "CC", 2))
-			return true;
 	}
-	return false;
+	return !strncmp(dm, "CC", 2);
 }
 
 float exp_dmf(const char *fa)
