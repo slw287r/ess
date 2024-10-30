@@ -289,7 +289,7 @@ float obs_dmf(const char *bam, const int mis, const faidx_t *fai)
 		if (get_nm(b) > mis)
 			continue;
 		mtf += bam_is_cc(b, &skip) * (c->flag & BAM_FPAIRED ? 1 : 2);
-		tot += !skip * (bool)(c->flag & BAM_FREAD1);
+		tot += !skip * (c->flag & BAM_FREAD1);
 	}
 	bam_destroy1(b);
 	bam_hdr_destroy(hdr);
