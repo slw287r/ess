@@ -15,13 +15,18 @@ int main(int argc, char *argv[])
 	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, arg->mis, fai);
 	if (arg->plot)
 	{
-		int i, is[MAX_IS] = {0};
+		int i, tot = 0, is[MAX_IS] = {0};
+		double cis[MAX_IS] = {0.0f};
 		sd_t sd = {0};
 		isize(arg->in, fai, is);
 		/* dbg is
 		for (i = 0; i < DEF_IS; ++i)
 			printf("%d\t%d\n", i, is[i]);
 		*/
+		for (i = 0; i < MAX_IS; ++i)
+			cis[i] = (tot += is[i]);
+		for (i = 0; i < MAX_IS; ++i)
+			cis[i] = 1 - (cis[i] /= cis[MAX_IS - 1]);
 		lrsd(is, MAX_IS, &sd);
 		cairo_surface_t *sf = NULL;
 		if (ends_with(arg->plot, ".svg"))
@@ -35,7 +40,7 @@ int main(int argc, char *argv[])
 		i = MAX_IS - 1;
 		while (!is[i--]);
 		++i; ++i;
-		do_drawing(cr, is, fmin(DEF_IS, i), &sd, sname, arg->sub);
+		do_drawing(cr, is, cis, fmin(DEF_IS, i), &sd, sname, arg->sub);
 		// clean canvas
 		if (ends_with(arg->plot, ".png"))
 			cairo_surface_write_to_png(cairo_get_target(cr), arg->plot);

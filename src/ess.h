@@ -22,8 +22,8 @@
 #define MIN_RL 35
 
 #define DEF_IS 500
-#define MAX_IS 0xFFFF
-#define MAX_TRIES 0xFFFF
+#define MAX_IS 0xFFF
+#define MAX_TRIES 0xFFFFF
 
 KSEQ_INIT(gzFile, gzread)
 // argument struct

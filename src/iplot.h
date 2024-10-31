@@ -23,7 +23,7 @@ typedef struct
 #define MARGIN (35*3)
 #define DIM_X (605*2.5)
 #define DIM_Y (165*2.5)
-#define WIDTH (DIM_X + MARGIN * 1.25)
+#define WIDTH (DIM_X + MARGIN * 2)
 #define HEIGHT (DIM_Y + MARGIN)
 
 void draw_box(cairo_t *cr, double x, double y, double width, double height);
@@ -34,8 +34,8 @@ void draw_xlab(cairo_t *cr, const char *xlab);
 void draw_ylab(cairo_t *cr, const char *ylab);
 void draw_y2lab(cairo_t *cr, const char *ylab);
 void draw_xticks(cairo_t *cr, const double xmax);
-void draw_yticks(cairo_t *cr, const sp_t *sp, const bool logscale);
-void draw_y2ticks(cairo_t *cr, const double ymax);
-void draw_is(cairo_t *cr, const int *is, const double peak, const int n);
-void do_drawing(cairo_t *cr, const int *is, const int n, const sd_t *sd,
-		const char *title, const char *sub);
+void draw_yticks(cairo_t *cr, const sp_t *sp);
+void draw_is(cairo_t *cr, const int *is, const double *cis, const double pk,
+		const int n);
+void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
+		const sd_t *sd, const char *title, const char *sub);
