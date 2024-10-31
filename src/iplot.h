@@ -20,10 +20,10 @@ typedef struct
 } sd_t;
 
 // plot dimensions
-#define MARGIN 65
-#define DIM_X 605
-#define DIM_Y 165
-#define WIDTH (DIM_X + MARGIN)
+#define MARGIN (35*3)
+#define DIM_X (605*2.5)
+#define DIM_Y (165*2.5)
+#define WIDTH (DIM_X + MARGIN * 1.25)
 #define HEIGHT (DIM_Y + MARGIN)
 
 void draw_box(cairo_t *cr, double x, double y, double width, double height);

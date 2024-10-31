@@ -23,7 +23,11 @@ int main(int argc, char *argv[])
 			printf("%d\t%d\n", i, is[i]);
 		*/
 		lrsd(is, MAX_IS, &sd);
-		cairo_surface_t *sf = cairo_svg_surface_create(arg->plot, WIDTH * 1.02, HEIGHT);
+		cairo_surface_t *sf = NULL;
+		if (ends_with(arg->plot, ".svg"))
+			sf = cairo_svg_surface_create(arg->plot, WIDTH, HEIGHT);
+		else if (ends_with(arg->plot, ".png"))
+			sf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, WIDTH, HEIGHT);
 		cairo_t *cr = cairo_create(sf);
 		cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
 		char sname[NAME_MAX];
@@ -33,6 +37,8 @@ int main(int argc, char *argv[])
 		++i; ++i;
 		do_drawing(cr, is, fmin(DEF_IS, i), &sd, sname, arg->sub);
 		// clean canvas
+		if (ends_with(arg->plot, ".png"))
+			cairo_surface_write_to_png(cairo_get_target(cr), arg->plot);
 		cairo_surface_destroy(sf);
 		cairo_destroy(cr);
 	}
@@ -112,7 +118,7 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 		error("Error: specified reference [%s] is inaccessible!\n", arg->ref);
 	if (arg->mis < 0)
 		error("Error: invalid mismatch value specified [%d]\n", arg->mis);
-	char *bai, *fai, *svg;
+	char *bai, *fai;
 	asprintf(&bai, "%s.bai", arg->in);
 	if (access(bai, R_OK))
 	{
@@ -127,11 +133,8 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 	}
 	free(bai);
 	free(fai);
-	if (arg->plot && !ends_with(arg->plot, ".svg"))
-	{
-		asprintf(&svg, "%s.svg", arg->plot);
-		arg->plot = svg; // mem leak
-	}
+	if (arg->plot && !(ends_with(arg->plot, ".png") || ends_with(arg->plot, ".svg")))
+		error("Error: unsupported plot format: [%s]\n", arg->plot);
 }
 
 int is_gzip(const char *fn)
@@ -422,7 +425,7 @@ void usage()
 	puts("  -o, --out \e[3mSTR\e[0m    Output ESS value to file \e[90m[stdout]\e[0m");
 	printf("  -m, --mis \e[3mINT\e[0m    Maximum mismatch allowed \e[90m[%d]\e[0m\n", MM_MAX);
 	puts("  -r, --ref \e[3mFILE\e[0m   Reference fasta with fai index \e[90m[auto]\e[0m");
-	puts("  -p, --plot \e[3mFILE\e[0m  Insert size plot svg file \e[90m[none]\e[0m");
+	puts("  -p, --plot \e[3mFILE\e[0m  Insert size plot png file \e[90m[none]\e[0m");
 	puts("  -s, --sub \e[3mFILE\e[0m   Sub-title of insert size plot \e[90m[none]\e[0m");
 	putchar('\n');
 	puts("  -h, --help       Display this message");
