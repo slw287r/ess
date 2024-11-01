@@ -78,7 +78,7 @@ void draw_xlab(cairo_t *cr, const char *xlab)
 	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 	cairo_text_extents(cr, xlab, &ext);
 	x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
-	y = DIM_Y + MARGIN / 2.5 - (ext.height / 2 + ext.y_bearing);
+	y = DIM_Y + MARGIN / 1.75 - (ext.height / 2 + ext.y_bearing);
 	cairo_move_to(cr, x, y);
 	cairo_show_text(cr, xlab);
 }
@@ -266,7 +266,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
 	draw_rrect(cr);
 	cairo_set_source_rgb (cr, 0, 0, 0);
-	cairo_translate(cr, MARGIN, MARGIN / 1.25);
+	cairo_translate(cr, MARGIN, MARGIN / 1);
 	// axis labels
 	double x, y;
 	cairo_text_extents_t ext;
@@ -284,7 +284,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	else
 	{
 		x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
-		y = ext.height / 2 + ext.y_bearing * 3;
+		y = ext.height / 2.0 + ext.y_bearing * 4;
 		cairo_move_to(cr, x, y);
 		cairo_show_text(cr, title);
 		// subtitle
@@ -292,7 +292,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 		cairo_select_font_face(cr, "serif", CAIRO_FONT_SLANT_ITALIC, CAIRO_FONT_WEIGHT_BOLD);
 		cairo_text_extents(cr, sub, &ext);
 		x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
-		y = ext.height / 2 + ext.y_bearing;
+		y = ext.height / 2 + ext.y_bearing * 2;
 		cairo_move_to(cr, x, y);
 		cairo_show_text(cr, sub);
 	}
