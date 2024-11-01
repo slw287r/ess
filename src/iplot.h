@@ -24,7 +24,7 @@ typedef struct
 #define DIM_X (605*2.5)
 #define DIM_Y (165*2.5)
 #define WIDTH (DIM_X + MARGIN * 2)
-#define HEIGHT (DIM_Y + MARGIN * 1.25)
+#define HEIGHT (DIM_Y + MARGIN * 1.5)
 
 void draw_box(cairo_t *cr, double x, double y, double width, double height);
 void draw_rect(cairo_t *cr, double x, double y, double width, double height);

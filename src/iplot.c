@@ -266,11 +266,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
 	draw_rrect(cr);
 	cairo_set_source_rgb (cr, 0, 0, 0);
-#ifdef __linux__
-	cairo_translate(cr, MARGIN, MARGIN / 2.0);
-#else
-	cairo_translate(cr, MARGIN, MARGIN / 1.75);
-#endif
+	cairo_translate(cr, MARGIN, MARGIN / 1.25);
 	// axis labels
 	double x, y;
 	cairo_text_extents_t ext;
@@ -288,11 +284,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	else
 	{
 		x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
-#ifdef __linux__
-		y = ext.height / 2 + ext.y_bearing * 2;
-#else
 		y = ext.height / 2 + ext.y_bearing * 3;
-#endif
 		cairo_move_to(cr, x, y);
 		cairo_show_text(cr, title);
 		// subtitle
