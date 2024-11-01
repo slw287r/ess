@@ -267,7 +267,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	draw_rrect(cr);
 	cairo_set_source_rgb (cr, 0, 0, 0);
 #ifdef __linux__
-	cairo_translate(cr, MARGIN, MARGIN / 1.50);
+	cairo_translate(cr, MARGIN, MARGIN / 2.0);
 #else
 	cairo_translate(cr, MARGIN, MARGIN / 1.75);
 #endif
