@@ -405,7 +405,7 @@ void lrsd(const int *is, const int n, sd_t *sd)
 void dump_ess_fn()
 {
 	printf("%50s\n", "obs(CC_end_freq + GG_end_freq)");
-	printf("%19s", "ESS (O/E) = ");
+	printf("%29s", "\e[3mESS\e[0m (O/E) = ");
 	horiz(32);
 	printf("%50s\n", "exp(CC_end_freq + GG_end_freq)");
 }
