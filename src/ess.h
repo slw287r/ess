@@ -18,7 +18,7 @@
 
 #define DM_CC 5
 #define DM_MAX 12
-#define MM_MAX 5
+#define MIN_IS 25
 #define MIN_RL 35
 
 #define DEF_IS 500
@@ -71,7 +71,7 @@ int get_nm(const bam1_t *b);
 float exp_dmf(const char *fa);
 float obs_dmf(const char *bam, const int mis, const faidx_t *fai);
 // insert size stats
-void isize(const char *bam, const faidx_t *fai, int *is);
+void isize(const char *bam, const faidx_t *fai, const int mis, int *is);
 void lrsd(const int *is, const int n, sd_t *sd);
 // parse command line arguments
 void prs_arg(int argc, char **argv, arg_t *arg);

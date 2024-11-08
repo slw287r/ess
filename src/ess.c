@@ -4,7 +4,7 @@ int main(int argc, char *argv[])
 {
 	setenv("FONTCONFIG_PATH", "/etc/fonts", 1);
 	arg_t *arg = calloc(1, sizeof(arg_t));
-	arg->mis = MM_MAX;
+	arg->mis = MIN_IS;
 	if (argc == 1)
 		usage();
 	prs_arg(argc, argv, arg);
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 		int i, tot = 0, is[MAX_IS] = {0};
 		double cis[MAX_IS] = {0.0f};
 		sd_t sd = {0};
-		isize(arg->in, fai, is);
+		isize(arg->in, fai, arg->mis, is);
 		/* dbg is
 		for (i = 0; i < DEF_IS; ++i)
 			printf("%d\t%d\n", i, is[i]);
@@ -294,7 +294,9 @@ float obs_dmf(const char *bam, const int mis, const faidx_t *fai)
 			continue;
 		if (!faidx_has_seq(fai, sam_hdr_tid2name(hdr, c->tid)))
 			continue;
-		if (get_nm(b) > mis)
+		if (llabs(b->core.isize) < mis)
+			continue;
+		if (get_nm(b) > b->core.l_qseq * 0.94)
 			continue;
 		mtf += bam_is_cc(b, &skip) * (c->flag & BAM_FPAIRED ? 1 : 2);
 		tot += !skip * (bool)(c->flag & BAM_FPAIRED ? c->flag & BAM_FREAD1 : true);
@@ -306,7 +308,7 @@ float obs_dmf(const char *bam, const int mis, const faidx_t *fai)
 	return dmf;
 }
 
-void isize(const char *bam, const faidx_t *fai, int *is)
+void isize(const char *bam, const faidx_t *fai, const int mis, int *is)
 {
 	int is1, tries = MAX_TRIES;
 	samFile *fp = sam_open(bam, "r");
@@ -319,15 +321,17 @@ void isize(const char *bam, const faidx_t *fai, int *is)
 			continue;
 		if (!faidx_has_seq(fai, sam_hdr_tid2name(hdr, c->tid)))
 			continue;
+		if (llabs(b->core.isize) < mis)
+			continue;
 		if (c->flag & BAM_FPAIRED)
 		{
 			if (b->core.mtid != b->core.tid)
 				continue;
 			else
 			{
-				if ((is1 = b->core.isize) <= 0 || is1 >= MAX_IS)
+				if ((is1 = b->core.isize) <= 0 || is1 > MAX_IS)
 					continue;
-				++is[is1];
+				++is[(int)fmin(is1, MAX_IS)];
 				if (!--tries) break;
 			}
 		}
@@ -428,7 +432,7 @@ void usage()
 	puts(BUL " \e[1mOptions\e[0m:");
 	puts("  -i, --in  \e[3mFILE\e[0m   Input BAM file with bai index");
 	puts("  -o, --out \e[3mSTR\e[0m    Output ESS value to file \e[90m[stdout]\e[0m");
-	printf("  -m, --mis \e[3mINT\e[0m    Maximum mismatch allowed \e[90m[%d]\e[0m\n", MM_MAX);
+	printf("  -m, --mis \e[3mINT\e[0m    Minimum insert size allowed \e[90m[%d]\e[0m\n", MIN_IS);
 	puts("  -r, --ref \e[3mFILE\e[0m   Reference fasta with fai index \e[90m[auto]\e[0m");
 	puts("  -p, --plot \e[3mFILE\e[0m  Insert size plot png file \e[90m[none]\e[0m");
 	puts("  -s, --sub \e[3mFILE\e[0m   Sub-title of insert size plot \e[90m[none]\e[0m");
