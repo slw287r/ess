@@ -115,7 +115,7 @@ void draw_y2lab(cairo_t *cr, const char *y2lab)
 
 void draw_xticks(cairo_t *cr, const double xmax)
 {
-	int x, m;
+	double x, m;
 	double w1 = 1.0, w2 = 1.0;
 	cairo_device_to_user_distance(cr, &w1, &w2);
 	cairo_set_line_width(cr, fmin(w1, w2) / 2.0);
@@ -127,9 +127,11 @@ void draw_xticks(cairo_t *cr, const double xmax)
 	char buf[sizeof(uint64_t) * 8 + 1];
 	cairo_text_extents(cr, "m", &ext);
 	double y_offset = ext.height;
-	for (x = 0; x <= xmax; x += (xmax <= 120 ? 10 : 50))
+	double major = nice_interval(xmax, 15), minor = major / 5;
+	printf("%f\t%f\n", xmax, major);
+	for (x = 0; x <= xmax; x += major)
 	{
-		sprintf(buf, "%d", x);
+		sprintf(buf, "%g", x);
 		cairo_set_source_rgb(cr, 0.16, 0.16, 0.16);
 		cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
 		cairo_text_extents(cr, buf, &ext);
@@ -138,21 +140,22 @@ void draw_xticks(cairo_t *cr, const double xmax)
 		// major ticks
 		cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 		cairo_move_to(cr, DIM_X * x / xmax, DIM_Y);
-		cairo_line_to(cr, DIM_X * x / xmax, DIM_Y - y_offset / 2);
-		for (m = (xmax <= 120 ? 2 : 10); m <= (xmax <= 120 ? 8 : 40); m += (xmax <= 120 ? 2 : 10))
+		cairo_line_to(cr, DIM_X * x / xmax, DIM_Y - y_offset);
+		// minor ticks
+		for (m = minor; m <= minor * 4; m += minor)
 		{
 			if ((x + m) / xmax > 1)
 				break;
 			cairo_set_line_width(cr, fmin(w1, w2) / 3.0);
 			cairo_move_to(cr, DIM_X * (x + m) / xmax, DIM_Y);
-			cairo_line_to(cr, DIM_X * (x + m) / xmax, DIM_Y - y_offset / 3);
+			cairo_line_to(cr, DIM_X * (x + m) / xmax, DIM_Y - y_offset / 1.5);
 			cairo_set_line_width(cr, fmin(w1, w2) / 2.0);
 		}
 		cairo_stroke(cr);
 		if (x != 0 && x != xmax)
 		{
 			cairo_set_dash(cr, dashes, ndash, 0);
-			cairo_move_to(cr, DIM_X * x / xmax, DIM_Y - y_offset / 2);
+			cairo_move_to(cr, DIM_X * x / xmax, DIM_Y - y_offset);
 			cairo_line_to(cr, DIM_X * x / xmax, 0);
 			cairo_stroke(cr);
 			cairo_set_dash(cr, dashes, 0, 0);
@@ -195,19 +198,19 @@ void draw_yticks(cairo_t *cr, const sp_t *sp)
 			cairo_move_to(cr, x, DIM_Y - y * DIM_Y + ext.height / 2);
 			cairo_show_text(cr, buf);
 			// mirror y
-			cairo_set_source_rgb(cr, 187 / 255.0, 12 / 255.0, 16 / 255.0);
 			sprintf(buf, "%.*f", i == sp->peak / sp->step ? 0 : 1, i * 100 * sp->step / sp->peak);
 			cairo_text_extents(cr, "m", &ext);
 			x = -ext.width / 4;
 			y = i * sp->step / sp->peak;
+			cairo_set_source_rgb(cr, 187 / 255.0, 12 / 255.0, 16 / 255.0);
 			cairo_move_to(cr, DIM_X - x, DIM_Y - y * DIM_Y + ext.height / 2);
 			cairo_show_text(cr, buf);
 			// major ticks
 			cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
 			cairo_move_to(cr, 0, DIM_Y - y * DIM_Y);
-			cairo_line_to(cr, x_offset * .5, DIM_Y - y * DIM_Y);
+			cairo_line_to(cr, x_offset * .75, DIM_Y - y * DIM_Y);
 			cairo_move_to(cr, DIM_X, DIM_Y - y * DIM_Y);
-			cairo_line_to(cr, DIM_X - x_offset * .5, DIM_Y - y * DIM_Y);
+			cairo_line_to(cr, DIM_X - x_offset * .75, DIM_Y - y * DIM_Y);
 			cairo_stroke(cr);
 			if (i != 0 && i != sp->peak / sp->step)
 			{
@@ -327,9 +330,10 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	cairo_device_to_user_distance(cr, &w1, &w2);
 	cairo_set_line_width(cr, fmin(w1, w2) / 1.25);
 	cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
-	cairo_set_source_rgb(cr, 0, 0, 0);
+	cairo_set_source_rgb(cr, 87 / 255.0, 62 / 255.0, 166 / 255.0);
 	cairo_move_to(cr, 0, 0);
 	cairo_line_to(cr, 0, DIM_Y); // yaxis
+	cairo_set_source_rgb(cr, 0, 0, 0);
 	// yticks
 	sp_t sp = {0.0f, 0.0f};
 	step_and_peak(ymax, &sp);

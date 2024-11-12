@@ -113,21 +113,35 @@ bool ends_with(const char *str, const char *sfx)
 	return ret;
 }
 
+double nice_interval(const double x, const double n)
+{
+	double rough_intv = x / n;
+	double magnitude = pow(10, floor(log10(rough_intv)));
+	double nice_intv;
+	if (rough_intv / magnitude <= 1)
+		nice_intv = 1 * magnitude;
+	else if (rough_intv / magnitude <= 2)
+		nice_intv = 2 * magnitude;
+	else if (rough_intv / magnitude <= 5)
+		nice_intv = 5 * magnitude;
+	else
+		nice_intv = 10 * magnitude;
+	return nice_intv;
+}
+
 void step_and_peak(const double n, sp_t *sp)
 {
-	sp->peak = pow(10, floor(log10(n)));
-	while (sp->peak < n)
-		sp->peak += pow(10, floor(log10(n)) - 1);
-	double step = sp->peak / 10.0;
-	double mag = pow(10, floor(log10(step)));
-	if (step / mag <= 1)
-		sp->step = 1 * mag;
-	else if (step / mag <= 2)
-		sp->step = 2 * mag;
-	else if (step / mag <= 5)
-		sp->step = 5 * mag;
-	else
-		sp->step = 10 * mag;
+	double intv = nice_interval(n, 10);
+	sp->step = intv;
+	double i = intv, j = 0;
+	while (i < n)
+	{
+		i += intv;
+		++j;
+	}
+	if (fmod(j, 2))
+		++j;
+	sp->peak = intv * j;
 }
 
 void horiz(const int _n)

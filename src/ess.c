@@ -294,9 +294,22 @@ float obs_dmf(const char *bam, const int mis, const faidx_t *fai)
 			continue;
 		if (!faidx_has_seq(fai, sam_hdr_tid2name(hdr, c->tid)))
 			continue;
-		if (llabs(b->core.isize) < mis)
+		if (llabs(c->isize) > MAX_IS)
 			continue;
-		if (get_nm(b) > b->core.l_qseq * 0.94)
+		if (c->flag & BAM_FPAIRED)
+		{
+			if (c->mtid != c->tid || llabs(c->isize) < mis)
+				continue;
+		}
+		else
+		{
+			sc_t sc = {0, 0};
+			get_sc(b, &sc);
+			int is = c->l_qseq - sc.left - sc.right;
+			if (is < mis)
+				continue;
+		}
+		if (get_nm(b) > c->l_qseq * 0.94)
 			continue;
 		mtf += bam_is_cc(b, &skip) * (c->flag & BAM_FPAIRED ? 1 : 2);
 		tot += !skip * (bool)(c->flag & BAM_FPAIRED ? c->flag & BAM_FREAD1 : true);
@@ -321,23 +334,22 @@ void isize(const char *bam, const faidx_t *fai, const int mis, int *is)
 			continue;
 		if (!faidx_has_seq(fai, sam_hdr_tid2name(hdr, c->tid)))
 			continue;
-		if (llabs(b->core.isize) < mis)
+		if (llabs(c->isize) > MAX_IS)
 			continue;
 		if (c->flag & BAM_FPAIRED)
 		{
-			if (b->core.mtid != b->core.tid)
+			if (c->mtid != c->tid || llabs(c->isize) < mis)
 				continue;
-			else
-			{
-				if ((is1 = b->core.isize) <= 0 || is1 > MAX_IS)
-					continue;
-				++is[(int)fmin(is1, MAX_IS)];
-				if (!--tries) break;
-			}
+			if ((is1 = c->isize) <= 0 || is1 > MAX_IS)
+				continue;
+			++is[(int)fmin(is1, MAX_IS)];
+			if (!--tries) break;
 		}
 		else
 		{
-			if ((is1 = b->core.l_qseq) < MAX_IS)
+			sc_t sc = {0, 0};
+			get_sc(b, &sc);
+			if ((is1 = c->l_qseq - sc.left - sc.right) <= MAX_IS && is1 >= mis)
 			{
 				++is[is1];
 				if (!--tries) break;
