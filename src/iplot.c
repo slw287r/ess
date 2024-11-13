@@ -93,7 +93,7 @@ void draw_ylab(cairo_t *cr, const char *ylab)
 	cairo_translate(cr, MARGIN / 2.0, HEIGHT / 2.0); // translate origin to the center
 	cairo_rotate(cr, 3 * M_PI / 2.0);
 	cairo_text_extents(cr, ylab, &ext);
-	cairo_move_to(cr, MARGIN / 2.0 - ext.width / 2, -MARGIN * 1.25);
+	cairo_move_to(cr, MARGIN / 2.0 + ext.height / 10, -MARGIN * 1.25);
 	cairo_show_text(cr, ylab);
 	cairo_restore(cr);
 }
@@ -108,7 +108,7 @@ void draw_y2lab(cairo_t *cr, const char *y2lab)
 	cairo_translate(cr, MARGIN / 2.0, HEIGHT / 2.0); // translate origin to the center
 	cairo_rotate(cr, 3 * M_PI / 2.0);
 	cairo_text_extents(cr, y2lab, &ext);
-	cairo_move_to(cr, MARGIN / 2.0 - ext.width / 2, WIDTH - MARGIN * 1.75);
+	cairo_move_to(cr, MARGIN / 2.0 - ext.height * 1.5, WIDTH - MARGIN * 1.75);
 	cairo_show_text(cr, y2lab);
 	cairo_restore(cr);
 }
@@ -287,7 +287,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	else
 	{
 		x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
-		y = ext.height / 2.0 + ext.y_bearing * 4;
+		y = ext.height / 2.0 + ext.y_bearing * 3;
 		cairo_move_to(cr, x, y);
 		cairo_show_text(cr, title);
 		// subtitle
@@ -295,7 +295,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 		cairo_select_font_face(cr, "serif", CAIRO_FONT_SLANT_ITALIC, CAIRO_FONT_WEIGHT_BOLD);
 		cairo_text_extents(cr, sub, &ext);
 		x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
-		y = ext.height / 2 + ext.y_bearing * 2;
+		y = ext.height / 2 + ext.y_bearing * 1.5;
 		cairo_move_to(cr, x, y);
 		cairo_show_text(cr, sub);
 	}
