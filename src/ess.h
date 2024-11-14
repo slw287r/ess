@@ -18,10 +18,11 @@
 
 #define DM_CC 5
 #define DM_MAX 12
-#define MIN_IS 25
 #define MIN_RL 35
 
-#define MAX_IS 500
+#define MIN_IS 25
+#define DEF_IS 500
+#define MAX_IS 0xFFFFF
 #define MAX_TRIES 0xFFFFF
 
 KSEQ_INIT(gzFile, gzread)

@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 	setenv("FONTCONFIG_PATH", "/etc/fonts", 1);
 	arg_t *arg = calloc(1, sizeof(arg_t));
 	arg->mis = MIN_IS;
-	arg->xis = MAX_IS;
+	arg->xis = DEF_IS;
 	if (argc == 1)
 		usage();
 	prs_arg(argc, argv, arg);
@@ -13,23 +13,24 @@ int main(int argc, char *argv[])
 	faidx_t *fai = NULL;
 	if (!(fai = fai_load(arg->ref)))
 		error("Error loading reference index of [%s]\n", arg->ref);
-	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, arg->mis, arg->xis, fai);
+	int max_is = fmax(MAX_IS, arg->xis);
+	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, arg->mis, max_is, fai);
 	if (arg->plot)
 	{
 		int i, tot = 0;
-		int *is = calloc(arg->xis + 1, sizeof(int));
-		double *cis = calloc(arg->xis + 1, sizeof(double));
+		int *is = calloc(max_is + 1, sizeof(int));
+		double *cis = calloc(max_is + 1, sizeof(double));
 		sd_t sd = {0};
-		isize(arg->in, fai, arg->mis, arg->xis + 1, is);
+		isize(arg->in, fai, arg->mis, max_is + 1, is);
 		/* dbg is
-		for (i = 0; i < arg->xis; ++i)
+		for (i = 0; i <= max_is; ++i)
 			printf("%d\t%d\n", i, is[i]);
 		*/
-		for (i = 0; i <= arg->xis; ++i)
+		for (i = 0; i <= max_is; ++i)
 			cis[i] = (tot += is[i]);
-		for (i = 0; i <= arg->xis; ++i)
-			cis[i] = 1 - (cis[i] /= cis[arg->xis - 1]);
-		lrsd(is, arg->xis, &sd);
+		for (i = 0; i <= max_is; ++i)
+			cis[i] = 1 - (cis[i] /= cis[max_is - 1]);
+		lrsd(is, max_is, &sd);
 		cairo_surface_t *sf = NULL;
 		if (ends_with(arg->plot, ".svg"))
 			sf = cairo_svg_surface_create(arg->plot, WIDTH, HEIGHT);
@@ -39,7 +40,7 @@ int main(int argc, char *argv[])
 		cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
 		char sname[NAME_MAX];
 		get_sname(arg->in, sname);
-		i = arg->xis;
+		i = max_is;
 		while (!is[i--]);
 		++i;
 		do_drawing(cr, is, cis, fmin(arg->xis, i), &sd, sname, arg->sub);
@@ -459,9 +460,9 @@ void usage()
 	puts(BUL " \e[1mOptions\e[0m:");
 	puts("  -i, --in  \e[3mFILE\e[0m     Input BAM file with bai index");
 	puts("  -o, --out \e[3mSTR\e[0m      Output ESS value to file \e[90m[stdout]\e[0m");
-	printf("  -m, --mis \e[3mINT\e[90m,INT\e[0m\e[0m  Minimum\e[90m,Maximum\e[0m insert size allowed \e[90m[%d,%d]\e[0m\n", MIN_IS, MAX_IS);
 	puts("  -r, --ref \e[3mFILE\e[0m     Reference fasta with fai index \e[90m[auto]\e[0m");
 	puts("  -p, --plot \e[3mFILE\e[0m    Insert size plot png file \e[90m[none]\e[0m");
+	printf("  -m, --mis \e[3mINT\e[90m,INT\e[0m\e[0m  Minimum\e[90m,Maximum\e[0m insert size to plot \e[90m[%d,%d]\e[0m\n", MIN_IS, DEF_IS);
 	puts("  -s, --sub \e[3mFILE\e[0m     Sub-title of insert size plot \e[90m[none]\e[0m");
 	putchar('\n');
 	puts("  -h, --help         Display this message");

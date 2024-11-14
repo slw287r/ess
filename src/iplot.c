@@ -255,7 +255,8 @@ void draw_is(cairo_t *cr, const int *is, const double *cis, const double pk,
 	cairo_move_to(cr, (double)xmin / xmax, 1 - cis[xmin]);
 	cairo_set_source_rgb(cr, 187 / 255.0, 12 / 255.0, 16 / 255.0);
 	for (i = xmin + 1; i <= xmax; ++i)
-		cairo_line_to(cr, (double)i / xmax, 1 - cis[i]);
+		if (cis[i] >= 0)
+			cairo_line_to(cr, (double)i / xmax, 1 - cis[i]);
 	cairo_save(cr);
 	cairo_scale(cr, 1.0, (double)DIM_X / DIM_Y);
 	cairo_stroke(cr);
