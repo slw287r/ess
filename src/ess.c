@@ -5,6 +5,7 @@ int main(int argc, char *argv[])
 	setenv("FONTCONFIG_PATH", "/etc/fonts", 1);
 	arg_t *arg = calloc(1, sizeof(arg_t));
 	arg->mis = MIN_IS;
+	arg->xis = MAX_IS;
 	if (argc == 1)
 		usage();
 	prs_arg(argc, argv, arg);
@@ -12,22 +13,23 @@ int main(int argc, char *argv[])
 	faidx_t *fai = NULL;
 	if (!(fai = fai_load(arg->ref)))
 		error("Error loading reference index of [%s]\n", arg->ref);
-	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, arg->mis, fai);
+	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, arg->mis, arg->xis, fai);
 	if (arg->plot)
 	{
-		int i, tot = 0, is[MAX_IS] = {0};
-		double cis[MAX_IS] = {0.0f};
+		int i, tot = 0;
+		int *is = calloc(arg->xis + 1, sizeof(int));
+		double *cis = calloc(arg->xis + 1, sizeof(double));
 		sd_t sd = {0};
-		isize(arg->in, fai, arg->mis, is);
+		isize(arg->in, fai, arg->mis, arg->xis + 1, is);
 		/* dbg is
-		for (i = 0; i < DEF_IS; ++i)
+		for (i = 0; i < arg->xis; ++i)
 			printf("%d\t%d\n", i, is[i]);
 		*/
-		for (i = 0; i < MAX_IS; ++i)
+		for (i = 0; i <= arg->xis; ++i)
 			cis[i] = (tot += is[i]);
-		for (i = 0; i < MAX_IS; ++i)
-			cis[i] = 1 - (cis[i] /= cis[MAX_IS - 1]);
-		lrsd(is, MAX_IS, &sd);
+		for (i = 0; i <= arg->xis; ++i)
+			cis[i] = 1 - (cis[i] /= cis[arg->xis - 1]);
+		lrsd(is, arg->xis, &sd);
 		cairo_surface_t *sf = NULL;
 		if (ends_with(arg->plot, ".svg"))
 			sf = cairo_svg_surface_create(arg->plot, WIDTH, HEIGHT);
@@ -37,15 +39,18 @@ int main(int argc, char *argv[])
 		cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
 		char sname[NAME_MAX];
 		get_sname(arg->in, sname);
-		i = MAX_IS - 1;
+		i = arg->xis;
 		while (!is[i--]);
-		++i; ++i;
-		do_drawing(cr, is, cis, fmin(DEF_IS, i), &sd, sname, arg->sub);
+		++i;
+		do_drawing(cr, is, cis, fmin(arg->xis, i), &sd, sname, arg->sub);
 		// clean canvas
 		if (ends_with(arg->plot, ".png"))
 			cairo_surface_write_to_png(cairo_get_target(cr), arg->plot);
 		cairo_surface_destroy(sf);
 		cairo_destroy(cr);
+		// clean sizes
+		free(is);
+		free(cis);
 	}
 	if (fai)
 		fai_destroy(fai);
@@ -74,6 +79,7 @@ static ko_longopt_t long_options[] = {
 void prs_arg(int argc, char **argv, arg_t *arg)
 {
 	int c = 0;
+	char *p = NULL;
 	ketopt_t opt = KETOPT_INIT;
 	const char *opt_str = "i:o:r:m:p:s:hv";
 	while ((c = ketopt(&opt, argc, argv, 1, opt_str, long_options)) >= 0)
@@ -83,7 +89,16 @@ void prs_arg(int argc, char **argv, arg_t *arg)
 			case 'i': arg->in = opt.arg; break;
 			case 'o': arg->out = opt.arg; break;
 			case 'r': arg->ref = opt.arg; break;
-			case 'm': arg->mis = atoi(opt.arg); break;
+			case 'm':
+				if ((p = strchr(opt.arg, ',')))
+				{
+					if (p != opt.arg)
+						arg->mis = atoi(opt.arg);
+					arg->xis = atoi(p + 1);
+				}
+				else
+					arg->mis = atoi(opt.arg);
+				break;
 			case 'p': arg->plot = opt.arg; break;
 			case 's': arg->sub = opt.arg; break;
 			case 'h': usage(); break;
@@ -278,7 +293,7 @@ float exp_dmf(const char *fa)
 	return dmf;
 }
 
-float obs_dmf(const char *bam, const int mis, const faidx_t *fai)
+float obs_dmf(const char *bam, const int mis, const int xis, const faidx_t *fai)
 {
 	bool skip;
 	float dmf = 0.0f;
@@ -294,7 +309,7 @@ float obs_dmf(const char *bam, const int mis, const faidx_t *fai)
 			continue;
 		if (!faidx_has_seq(fai, sam_hdr_tid2name(hdr, c->tid)))
 			continue;
-		if (llabs(c->isize) > MAX_IS)
+		if (llabs(c->isize) > xis)
 			continue;
 		if (c->flag & BAM_FPAIRED)
 		{
@@ -321,7 +336,7 @@ float obs_dmf(const char *bam, const int mis, const faidx_t *fai)
 	return dmf;
 }
 
-void isize(const char *bam, const faidx_t *fai, const int mis, int *is)
+void isize(const char *bam, const faidx_t *fai, const int mis, const int xis, int *is)
 {
 	int is1, tries = MAX_TRIES;
 	samFile *fp = sam_open(bam, "r");
@@ -334,22 +349,22 @@ void isize(const char *bam, const faidx_t *fai, const int mis, int *is)
 			continue;
 		if (!faidx_has_seq(fai, sam_hdr_tid2name(hdr, c->tid)))
 			continue;
-		if (llabs(c->isize) > MAX_IS)
+		if (llabs(c->isize) > xis)
 			continue;
 		if (c->flag & BAM_FPAIRED)
 		{
 			if (c->mtid != c->tid || llabs(c->isize) < mis)
 				continue;
-			if ((is1 = c->isize) <= 0 || is1 > MAX_IS)
+			if ((is1 = c->isize) <= 0 || is1 > xis)
 				continue;
-			++is[(int)fmin(is1, MAX_IS)];
+			++is[(int)fmin(is1, xis)];
 			if (!--tries) break;
 		}
 		else
 		{
 			sc_t sc = {0, 0};
 			get_sc(b, &sc);
-			if ((is1 = c->l_qseq - sc.left - sc.right) <= MAX_IS && is1 >= mis)
+			if ((is1 = c->l_qseq - sc.left - sc.right) <= xis && is1 >= mis)
 			{
 				++is[is1];
 				if (!--tries) break;
@@ -389,7 +404,7 @@ void lrsd(const int *is, const int n, sd_t *sd)
 	}
 	int lc = 0, rc = 0;
 	double lsd = 0, rsd = 0;
-	for (i = 1, j = 0; i < MAX_IS; ++i)
+	for (i = 1, j = 0; i < n; ++i)
 	{
 		rm = i;
 		j += is[i];
@@ -430,7 +445,7 @@ void usage()
 {
 	struct winsize w;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-	int wx = fmin(60, w.ws_col);
+	int wx = fmin(65, w.ws_col);
 	horiz(wx);
 	char title[] = "\e[1mCalculate End-Signature-Score (ESS) from BAM file\e[0m";
 	int title_len = strlen_wo_esc(title);
@@ -442,15 +457,15 @@ void usage()
 	printf("%s \e[1mUsage\e[0m: \e[1;31m%s\e[0;0m \e[1;90m[options]\e[0;0m -i <bam> -o <tsv>\n", BUL, __progname);
 	putchar('\n');
 	puts(BUL " \e[1mOptions\e[0m:");
-	puts("  -i, --in  \e[3mFILE\e[0m   Input BAM file with bai index");
-	puts("  -o, --out \e[3mSTR\e[0m    Output ESS value to file \e[90m[stdout]\e[0m");
-	printf("  -m, --mis \e[3mINT\e[0m    Minimum insert size allowed \e[90m[%d]\e[0m\n", MIN_IS);
-	puts("  -r, --ref \e[3mFILE\e[0m   Reference fasta with fai index \e[90m[auto]\e[0m");
-	puts("  -p, --plot \e[3mFILE\e[0m  Insert size plot png file \e[90m[none]\e[0m");
-	puts("  -s, --sub \e[3mFILE\e[0m   Sub-title of insert size plot \e[90m[none]\e[0m");
+	puts("  -i, --in  \e[3mFILE\e[0m     Input BAM file with bai index");
+	puts("  -o, --out \e[3mSTR\e[0m      Output ESS value to file \e[90m[stdout]\e[0m");
+	printf("  -m, --mis \e[3mINT\e[90m,INT\e[0m\e[0m  Minimum\e[90m,Maximum\e[0m insert size allowed \e[90m[%d,%d]\e[0m\n", MIN_IS, MAX_IS);
+	puts("  -r, --ref \e[3mFILE\e[0m     Reference fasta with fai index \e[90m[auto]\e[0m");
+	puts("  -p, --plot \e[3mFILE\e[0m    Insert size plot png file \e[90m[none]\e[0m");
+	puts("  -s, --sub \e[3mFILE\e[0m     Sub-title of insert size plot \e[90m[none]\e[0m");
 	putchar('\n');
-	puts("  -h, --help       Display this message");
-	puts("  -v, --version    Display program version");
+	puts("  -h, --help         Display this message");
+	puts("  -v, --version      Display program version");
 	putchar('\n');
 	puts(BUL " \e[1mContact\e[0m: \e[4mmeta@geneplus.cn\e[0m for support and bug report");
 	horiz(wx);

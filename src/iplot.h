@@ -20,7 +20,7 @@ typedef struct
 } sd_t;
 
 // plot dimensions
-#define MARGIN (35*3.0)
+#define MARGIN (25*3.0)
 #define DIM_X (605*2.5)
 #define DIM_Y (165*2.5)
 #define WIDTH (DIM_X + MARGIN * 2)

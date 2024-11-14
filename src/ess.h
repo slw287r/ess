@@ -21,8 +21,7 @@
 #define MIN_IS 25
 #define MIN_RL 35
 
-#define DEF_IS 500
-#define MAX_IS 0xFFF
+#define MAX_IS 500
 #define MAX_TRIES 0xFFFFF
 
 KSEQ_INIT(gzFile, gzread)
@@ -30,7 +29,7 @@ KSEQ_INIT(gzFile, gzread)
 typedef struct
 {
 	char *in, *out, *ref, *plot, *sub, *dep;
-	int mis;
+	int mis, xis;
 } arg_t;
 
 int8_t seq_comp_table[16] = {
@@ -69,9 +68,9 @@ bool bam_is_cc(const bam1_t *b, bool *skip);
 int get_nm(const bam1_t *b);
 // expected and observed dimmer frequencies
 float exp_dmf(const char *fa);
-float obs_dmf(const char *bam, const int mis, const faidx_t *fai);
+float obs_dmf(const char *bam, const int mis, const int xis, const faidx_t *fai);
 // insert size stats
-void isize(const char *bam, const faidx_t *fai, const int mis, int *is);
+void isize(const char *bam, const faidx_t *fai, const int mis, const int xis, int *is);
 void lrsd(const int *is, const int n, sd_t *sd);
 // parse command line arguments
 void prs_arg(int argc, char **argv, arg_t *arg);

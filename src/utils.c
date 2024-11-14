@@ -131,17 +131,24 @@ double nice_interval(const double x, const double n)
 
 void step_and_peak(const double n, sp_t *sp)
 {
-	double intv = nice_interval(n, 10);
-	sp->step = intv;
-	double i = intv, j = 0;
-	while (i < n)
+	sp->peak = n;
+	sp->step = nice_interval(n, 10);
+	double i = 0, j;
+	int k, divs[] = {1, 2, 4, 5, 8, 10, 20};
+	while (i < sp->peak)
+		i += sp->step;
+	if (i < sp->peak)
+		i +=  sp->step;
+	while ((j = i / sp->step) <= 20)
 	{
-		i += intv;
-		++j;
+		for (k = 0; k < 7; ++k)
+			if (j == divs[k])
+				break;
+		if (k != 7)
+			break;
+		i += sp->step;
 	}
-	if (fmod(j, 2))
-		++j;
-	sp->peak = intv * j;
+	sp->peak = i;
 }
 
 void horiz(const int _n)

@@ -78,7 +78,7 @@ void draw_xlab(cairo_t *cr, const char *xlab)
 	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 	cairo_text_extents(cr, xlab, &ext);
 	x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
-	y = DIM_Y + MARGIN / 1.75 - (ext.height / 2 + ext.y_bearing);
+	y = DIM_Y + MARGIN / 2 - (ext.height / 3 + ext.y_bearing);
 	cairo_move_to(cr, x, y);
 	cairo_show_text(cr, xlab);
 }
@@ -108,7 +108,7 @@ void draw_y2lab(cairo_t *cr, const char *y2lab)
 	cairo_translate(cr, MARGIN / 2.0, HEIGHT / 2.0); // translate origin to the center
 	cairo_rotate(cr, 3 * M_PI / 2.0);
 	cairo_text_extents(cr, y2lab, &ext);
-	cairo_move_to(cr, MARGIN / 2.0 - ext.height * 1.5, WIDTH - MARGIN * 1.75);
+	cairo_move_to(cr, MARGIN / 2.0, WIDTH - MARGIN * 1.75);
 	cairo_show_text(cr, y2lab);
 	cairo_restore(cr);
 }
@@ -127,8 +127,7 @@ void draw_xticks(cairo_t *cr, const double xmax)
 	char buf[sizeof(uint64_t) * 8 + 1];
 	cairo_text_extents(cr, "m", &ext);
 	double y_offset = ext.height;
-	double major = nice_interval(xmax, 15), minor = major / 5;
-	printf("%f\t%f\n", xmax, major);
+	double major = nice_interval(xmax, 15), minor = major / 10;
 	for (x = 0; x <= xmax; x += major)
 	{
 		sprintf(buf, "%g", x);
@@ -142,13 +141,13 @@ void draw_xticks(cairo_t *cr, const double xmax)
 		cairo_move_to(cr, DIM_X * x / xmax, DIM_Y);
 		cairo_line_to(cr, DIM_X * x / xmax, DIM_Y - y_offset);
 		// minor ticks
-		for (m = minor; m <= minor * 4; m += minor)
+		for (m = minor; m <= minor * 9; m += minor)
 		{
 			if ((x + m) / xmax > 1)
 				break;
 			cairo_set_line_width(cr, fmin(w1, w2) / 3.0);
 			cairo_move_to(cr, DIM_X * (x + m) / xmax, DIM_Y);
-			cairo_line_to(cr, DIM_X * (x + m) / xmax, DIM_Y - y_offset / 1.5);
+			cairo_line_to(cr, DIM_X * (x + m) / xmax, DIM_Y - y_offset / (m == minor * 5 ? 1.25 : 1.75));
 			cairo_set_line_width(cr, fmin(w1, w2) / 2.0);
 		}
 		cairo_stroke(cr);
@@ -182,11 +181,14 @@ void draw_yticks(cairo_t *cr, const sp_t *sp)
 		double x_offset = ext.width;
 		// get precision of step
 		int p = 0;
-		double step = sp->step;
-		while (step != (int)step)
+		// check precision
+		int pc = 0;
+		char *pp = NULL;
+		for (i = 0; i <= sp->peak / sp->step; ++i)
 		{
-			++p;
-			step *= 10;
+			sprintf(buf, "%g", i * 100 * sp->step / sp->peak);
+			if ((pp = strchr(buf, '.')))
+				pc = fmax(pc, strlen(pp + 1));
 		}
 		for (i = 0; i <= sp->peak / sp->step; ++i)
 		{
@@ -198,7 +200,7 @@ void draw_yticks(cairo_t *cr, const sp_t *sp)
 			cairo_move_to(cr, x, DIM_Y - y * DIM_Y + ext.height / 2);
 			cairo_show_text(cr, buf);
 			// mirror y
-			sprintf(buf, "%.*f", i == sp->peak / sp->step ? 0 : 1, i * 100 * sp->step / sp->peak);
+			sprintf(buf, "%.*f", i == sp->peak / sp->step || !i ? 0 : pc, i * 100 * sp->step / sp->peak);
 			cairo_text_extents(cr, "m", &ext);
 			x = -ext.width / 4;
 			y = i * sp->step / sp->peak;
@@ -236,16 +238,14 @@ void draw_is(cairo_t *cr, const int *is, const double *cis, const double pk,
 	cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 	cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
 	cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
-	int xmin = 0, xmax = n, ymax = 0;
+	int xmin = 0, xmax = n;
 	for (xmin = 0; xmin <= n; ++xmin)
 		if (is[xmin])
 			break;
-	for (i = 0; i <= n; ++i)
-		ymax = (int)fmax(ymax, is[i]);
 	// isize frequency
 	cairo_move_to(cr, (double)xmin / xmax, 1 - (double)is[xmin] / pk);
 	cairo_set_source_rgb(cr, 87 / 255.0, 62 / 255.0, 166 / 255.0);
-	for (i = xmin + 1; i < xmax; ++i)
+	for (i = xmin + 1; i <= xmax; ++i)
 		cairo_line_to(cr, (double)i / xmax, 1 - (double)is[i] / pk);
 	cairo_save(cr);
 	cairo_scale(cr, 1.0, (double)DIM_X / DIM_Y);
@@ -254,7 +254,7 @@ void draw_is(cairo_t *cr, const int *is, const double *cis, const double pk,
 	// isize cumulative
 	cairo_move_to(cr, (double)xmin / xmax, 1 - cis[xmin]);
 	cairo_set_source_rgb(cr, 187 / 255.0, 12 / 255.0, 16 / 255.0);
-	for (i = xmin + 1; i < xmax; ++i)
+	for (i = xmin + 1; i <= xmax; ++i)
 		cairo_line_to(cr, (double)i / xmax, 1 - cis[i]);
 	cairo_save(cr);
 	cairo_scale(cr, 1.0, (double)DIM_X / DIM_Y);
@@ -287,7 +287,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	else
 	{
 		x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
-		y = ext.height / 2.0 + ext.y_bearing * 3;
+		y = ext.height / 2.0 + ext.y_bearing * 3.5;
 		cairo_move_to(cr, x, y);
 		cairo_show_text(cr, title);
 		// subtitle
@@ -334,7 +334,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	cairo_move_to(cr, 0, 0);
 	cairo_line_to(cr, 0, DIM_Y); // yaxis
 	cairo_set_source_rgb(cr, 0, 0, 0);
-	// yticks
+	// ticks
 	sp_t sp = {0.0f, 0.0f};
 	step_and_peak(ymax, &sp);
 	draw_xticks(cr, xmax);
