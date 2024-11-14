@@ -287,7 +287,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	else
 	{
 		x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
-		y = ext.height / 2.0 + ext.y_bearing * 3.5;
+		y = ext.height / 2.0 + ext.y_bearing * 3.75;
 		cairo_move_to(cr, x, y);
 		cairo_show_text(cr, title);
 		// subtitle
