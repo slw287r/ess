@@ -13,24 +13,23 @@ int main(int argc, char *argv[])
 	faidx_t *fai = NULL;
 	if (!(fai = fai_load(arg->ref)))
 		error("Error loading reference index of [%s]\n", arg->ref);
-	int max_is = fmax(MAX_IS, arg->xis);
-	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, arg->mis, max_is, fai);
+	float exp = exp_dmf(arg->ref), obs = obs_dmf(arg->in, arg->mis, MAX_IS, fai);
 	if (arg->plot)
 	{
 		int i, tot = 0;
-		int *is = calloc(max_is + 1, sizeof(int));
-		double *cis = calloc(max_is + 1, sizeof(double));
+		int *is = calloc(MAX_IS + 1, sizeof(int));
+		double *cis = calloc(MAX_IS + 1, sizeof(double));
 		sd_t sd = {0};
-		isize(arg->in, fai, arg->mis, max_is + 1, is);
+		isize(arg->in, fai, arg->mis, MAX_IS + 1, is);
 		/* dbg is
-		for (i = 0; i <= max_is; ++i)
+		for (i = 0; i <= MAX_IS; ++i)
 			printf("%d\t%d\n", i, is[i]);
 		*/
-		for (i = 0; i <= max_is; ++i)
+		for (i = 0; i <= MAX_IS; ++i)
 			cis[i] = (tot += is[i]);
-		for (i = 0; i <= max_is; ++i)
-			cis[i] = 1 - (cis[i] /= cis[max_is - 1]);
-		lrsd(is, max_is, &sd);
+		for (i = 0; i <= MAX_IS; ++i)
+			cis[i] = 1 - (cis[i] /= cis[MAX_IS - 1]);
+		lrsd(is, MAX_IS, &sd);
 		cairo_surface_t *sf = NULL;
 		if (ends_with(arg->plot, ".svg"))
 			sf = cairo_svg_surface_create(arg->plot, WIDTH, HEIGHT);
@@ -40,7 +39,7 @@ int main(int argc, char *argv[])
 		cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
 		char sname[NAME_MAX];
 		get_sname(arg->in, sname);
-		i = max_is;
+		i = MAX_IS;
 		while (!is[i--]);
 		++i;
 		do_drawing(cr, is, cis, fmin(arg->xis, i), &sd, sname, arg->sub);

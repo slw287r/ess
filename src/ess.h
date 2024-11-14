@@ -22,7 +22,7 @@
 
 #define MIN_IS 25
 #define DEF_IS 500
-#define MAX_IS 0xFFFFF
+#define MAX_IS 0xFFFF
 #define MAX_TRIES 0xFFFFF
 
 KSEQ_INIT(gzFile, gzread)
