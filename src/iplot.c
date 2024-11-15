@@ -163,7 +163,7 @@ void draw_xticks(cairo_t *cr, const double xmax)
 	cairo_stroke(cr);
 }
 
-void draw_yticks(cairo_t *cr, const sp_t *sp)
+void draw_yticks(cairo_t *cr, const sp_t *sp, double *scale)
 {
 	int i;
 	double x, y;
@@ -175,6 +175,12 @@ void draw_yticks(cairo_t *cr, const sp_t *sp)
 	cairo_set_font_size(cr, 16.0);
 	const double dashes[] = {0.75, 5.0, 0.75, 5.0};
 	int ndash = sizeof(dashes) / sizeof(dashes[0]);
+	if (sp->step >= 1e9)
+		*scale = 1e9;
+	else if (sp->step >= 1e6)
+		*scale = 1e6;
+	else if (sp->step >= 1e3)
+		*scale = 1e3;
 	char buf[sizeof(uint64_t) * 8 + 1];
 	{
 		cairo_text_extents(cr, "m", &ext);
@@ -192,7 +198,7 @@ void draw_yticks(cairo_t *cr, const sp_t *sp)
 		}
 		for (i = 0; i <= sp->peak / sp->step; ++i)
 		{
-			sprintf(buf, "%.*f", p, i * sp->step);
+			sprintf(buf, "%.*f", p, i * sp->step / (*scale));
 			cairo_text_extents(cr, buf, &ext);
 			x = -ext.width - x_offset / 2.5;
 			y = i * sp->step / sp->peak;
@@ -313,15 +319,6 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	y = ext.height / 2 - ext.y_bearing;
 	cairo_move_to(cr, x, y);
 	cairo_show_text(cr, zlab);
-	// xlab
-	char xlab[] = "Insert Sizes (bp)";
-	draw_xlab(cr, xlab);
-	// ylab
-	char ylab[] = "Frequency";
-	draw_ylab(cr, ylab);
-	// y2lab
-	char y2lab[] = "Cumulative (%)";
-	draw_y2lab(cr, y2lab);
 	// draw isize
 	int xmax = n, ymax = 0;
 	for (i = 0; i <= n; ++i)
@@ -336,11 +333,26 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	cairo_line_to(cr, 0, DIM_Y); // yaxis
 	cairo_set_source_rgb(cr, 0, 0, 0);
 	// ticks
+	double scale = 1.0f;
 	sp_t sp = {0.0f, 0.0f};
 	step_and_peak(ymax, &sp);
 	draw_xticks(cr, xmax);
-	draw_yticks(cr, &sp);
+	draw_yticks(cr, &sp, &scale);
 	draw_box(cr, 0, 0, DIM_X, DIM_Y);
+	// xlab
+	char xlab[] = "Insert Sizes (bp)";
+	draw_xlab(cr, xlab);
+	// ylab
+	char ylab[NAME_MAX] = {'\0'};
+	if (scale == 1)
+		strncpy(ylab, "Frequency", NAME_MAX);
+	else
+		snprintf(ylab, NAME_MAX, "Frequency (%c)", scale == 1e9 ? 'G' :
+				(scale == 1e6 ? 'M' : 'K'));
+	draw_ylab(cr, ylab);
+	// y2lab
+	char y2lab[] = "Cumulative (%)";
+	draw_y2lab(cr, y2lab);
 	cairo_save(cr);
 	cairo_scale(cr, DIM_X, DIM_Y);
 	draw_is(cr, is, cis, sp.peak, xmax);

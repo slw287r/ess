@@ -34,7 +34,7 @@ void draw_xlab(cairo_t *cr, const char *xlab);
 void draw_ylab(cairo_t *cr, const char *ylab);
 void draw_y2lab(cairo_t *cr, const char *ylab);
 void draw_xticks(cairo_t *cr, const double xmax);
-void draw_yticks(cairo_t *cr, const sp_t *sp);
+void draw_yticks(cairo_t *cr, const sp_t *sp, double *scale);
 void draw_is(cairo_t *cr, const int *is, const double *cis, const double pk,
 		const int n);
 void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
