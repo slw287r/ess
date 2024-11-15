@@ -93,7 +93,7 @@ void draw_ylab(cairo_t *cr, const char *ylab)
 	cairo_translate(cr, MARGIN / 2.0, HEIGHT / 2.0); // translate origin to the center
 	cairo_rotate(cr, 3 * M_PI / 2.0);
 	cairo_text_extents(cr, ylab, &ext);
-	cairo_move_to(cr, MARGIN / 2.0 + ext.height / 10, -MARGIN * 1.25);
+	cairo_move_to(cr, MARGIN / 2.0 - ext.width / 2 * DIM_Y / DIM_X, -MARGIN * 1.2);
 	cairo_show_text(cr, ylab);
 	cairo_restore(cr);
 }
@@ -108,7 +108,7 @@ void draw_y2lab(cairo_t *cr, const char *y2lab)
 	cairo_translate(cr, MARGIN / 2.0, HEIGHT / 2.0); // translate origin to the center
 	cairo_rotate(cr, 3 * M_PI / 2.0);
 	cairo_text_extents(cr, y2lab, &ext);
-	cairo_move_to(cr, MARGIN / 2.0, WIDTH - MARGIN * 1.75);
+	cairo_move_to(cr, MARGIN / 2.0 - ext.width / 2 * DIM_Y / DIM_X, WIDTH - MARGIN * 1.75);
 	cairo_show_text(cr, y2lab);
 	cairo_restore(cr);
 }
@@ -347,8 +347,8 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	if (scale == 1)
 		strncpy(ylab, "Frequency", NAME_MAX);
 	else
-		snprintf(ylab, NAME_MAX, "Frequency (%c)", scale == 1e9 ? 'G' :
-				(scale == 1e6 ? 'M' : 'K'));
+		snprintf(ylab, NAME_MAX, "Frequency (10%s)", scale == 1e9 ? "⁹" :
+				(scale == 1e6 ? "⁶" : "³"));
 	draw_ylab(cr, ylab);
 	// y2lab
 	char y2lab[] = "Cumulative (%)";
