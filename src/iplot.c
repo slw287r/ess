@@ -75,6 +75,7 @@ void draw_xlab(cairo_t *cr, const char *xlab)
 	double x, y;
 	cairo_text_extents_t ext;
 	cairo_set_font_size(cr, 18.0);
+	cairo_set_source_rgb(cr, 0, 0, 0);
 	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 	cairo_text_extents(cr, xlab, &ext);
 	x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
@@ -83,18 +84,24 @@ void draw_xlab(cairo_t *cr, const char *xlab)
 	cairo_show_text(cr, xlab);
 }
 
-void draw_ylab(cairo_t *cr, const char *ylab)
+void draw_ylab(cairo_t *cr, const char *lab, double x, double canvas_height)
 {
-	cairo_save(cr);
-	cairo_set_font_size(cr, 18.0);
 	cairo_text_extents_t ext;
+	// Measure text dimensions
+	cairo_text_extents(cr, lab, &ext);
+	// Calculate the center of the canvas for the y-axis
+	double y_center = canvas_height / 2.0;
+	// Adjust position for rotation and centering
+	double x_pos = x - (ext.height / 2.0); // Offset to center the rotated text
+	double y_pos = y_center + (ext.width / 2.0); // Offset to vertically center the text
+	// Apply rotation for vertical text
+	cairo_save(cr);
+	cairo_translate(cr, x_pos, y_pos);
+	cairo_rotate(cr, -M_PI / 2.0); // Rotate 90 degrees counter-clockwise
+	// Draw the text
+	cairo_move_to(cr, 0, 0);
 	cairo_set_source_rgb(cr, 87 / 255.0, 62 / 255.0, 166 / 255.0);
-	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-	cairo_translate(cr, MARGIN / 2.0, HEIGHT / 2.0); // translate origin to the center
-	cairo_rotate(cr, 3 * M_PI / 2.0);
-	cairo_text_extents(cr, ylab, &ext);
-	cairo_move_to(cr, MARGIN / 2.0 - ext.width / 2 * DIM_Y / DIM_X, -MARGIN * 1.2);
-	cairo_show_text(cr, ylab);
+	cairo_show_text(cr, lab);
 	cairo_restore(cr);
 }
 
@@ -349,7 +356,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	else
 		snprintf(ylab, NAME_MAX, "Frequency (10%s)", scale == 1e9 ? "⁹" :
 				(scale == 1e6 ? "⁶" : "³"));
-	draw_ylab(cr, ylab);
+	draw_ylab(cr, ylab, -MARGIN / 1.75, DIM_Y);
 	// y2lab
 	char y2lab[] = "Cumulative (%)";
 	draw_y2lab(cr, y2lab);
