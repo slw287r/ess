@@ -87,36 +87,34 @@ void draw_xlab(cairo_t *cr, const char *xlab)
 void draw_ylab(cairo_t *cr, const char *lab, double x, double canvas_height)
 {
 	cairo_text_extents_t ext;
-	// Measure text dimensions
 	cairo_text_extents(cr, lab, &ext);
-	// Calculate the center of the canvas for the y-axis
 	double y_center = canvas_height / 2.0;
-	// Adjust position for rotation and centering
-	double x_pos = x - (ext.height / 2.0); // Offset to center the rotated text
-	double y_pos = y_center + (ext.width / 2.0); // Offset to vertically center the text
-	// Apply rotation for vertical text
+	double x_pos = x - (ext.height / 2.0);
+	double y_pos = y_center + (ext.width / 2.0);
 	cairo_save(cr);
 	cairo_translate(cr, x_pos, y_pos);
-	cairo_rotate(cr, -M_PI / 2.0); // Rotate 90 degrees counter-clockwise
-	// Draw the text
+	cairo_rotate(cr, -M_PI / 2.0);
 	cairo_move_to(cr, 0, 0);
 	cairo_set_source_rgb(cr, 87 / 255.0, 62 / 255.0, 166 / 255.0);
 	cairo_show_text(cr, lab);
 	cairo_restore(cr);
 }
 
-void draw_y2lab(cairo_t *cr, const char *y2lab)
+void draw_y2lab(cairo_t *cr, const char *lab, double x, double canvas_height)
 {
-	cairo_save(cr);
-	cairo_set_font_size(cr, 18.0);
 	cairo_text_extents_t ext;
+	cairo_text_extents(cr, lab, &ext);
+	double y_center = canvas_height / 2.0;
+	double x_pos = x + (ext.height / 2.0);
+	double y_pos = y_center - (ext.width / 2.0);
+	cairo_save(cr);
+	cairo_translate(cr, x_pos, y_pos);
+	cairo_rotate(cr, M_PI / 2.0);
+	cairo_move_to(cr, 0, 0);
+	cairo_set_font_size(cr, 18.0);
 	cairo_set_source_rgb(cr, 187 / 255.0, 12 / 255.0, 16 / 255.0);
 	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-	cairo_translate(cr, MARGIN / 2.0, HEIGHT / 2.0); // translate origin to the center
-	cairo_rotate(cr, 3 * M_PI / 2.0);
-	cairo_text_extents(cr, y2lab, &ext);
-	cairo_move_to(cr, MARGIN / 2.0 - ext.width / 2 * DIM_Y / DIM_X, WIDTH - MARGIN * 1.75);
-	cairo_show_text(cr, y2lab);
+	cairo_show_text(cr, lab);
 	cairo_restore(cr);
 }
 
@@ -359,7 +357,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	draw_ylab(cr, ylab, -MARGIN / 1.75, DIM_Y);
 	// y2lab
 	char y2lab[] = "Cumulative (%)";
-	draw_y2lab(cr, y2lab);
+	draw_y2lab(cr, y2lab, DIM_X + MARGIN / 2.0, DIM_Y);
 	cairo_save(cr);
 	cairo_scale(cr, DIM_X, DIM_Y);
 	draw_is(cr, is, cis, sp.peak, xmax);
