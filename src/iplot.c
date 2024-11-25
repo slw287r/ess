@@ -191,17 +191,20 @@ void draw_yticks(cairo_t *cr, const sp_t *sp, double *scale)
 		cairo_text_extents(cr, "m", &ext);
 		double x_offset = ext.width;
 		// check precision
-		int pc = 0;
 		char *pp = NULL;
+		int p1 = 0, p2 = 0;
 		for (i = 0; i <= sp->peak / sp->step; ++i)
 		{
+			sprintf(buf, "%g", i * sp->step);
+			if ((pp = strchr(buf, '.')))
+				p1 = fmax(p1, strlen(pp + 1));
 			sprintf(buf, "%g", i * 100 * sp->step / sp->peak);
 			if ((pp = strchr(buf, '.')))
-				pc = fmax(pc, strlen(pp + 1));
+				p2 = fmax(p2, strlen(pp + 1));
 		}
 		for (i = 0; i <= sp->peak / sp->step; ++i)
 		{
-			sprintf(buf, "%.*f", pc, i * sp->step / (*scale));
+			sprintf(buf, "%.*f", p1, i * sp->step / (*scale));
 			cairo_text_extents(cr, buf, &ext);
 			x = -ext.width - x_offset / 2.5;
 			y = i * sp->step / sp->peak;
@@ -209,7 +212,7 @@ void draw_yticks(cairo_t *cr, const sp_t *sp, double *scale)
 			cairo_move_to(cr, x, DIM_Y - y * DIM_Y + ext.height / 2);
 			cairo_show_text(cr, buf);
 			// mirror y
-			sprintf(buf, "%.*f", i == sp->peak / sp->step || !i ? 0 : pc, i * 100 * sp->step / sp->peak);
+			sprintf(buf, "%.*f", i == sp->peak / sp->step || !i ? 0 : p2, i * 100 * sp->step / sp->peak);
 			cairo_text_extents(cr, "m", &ext);
 			x = -ext.width / 4;
 			y = i * sp->step / sp->peak;
