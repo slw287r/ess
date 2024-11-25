@@ -75,41 +75,46 @@ void draw_xlab(cairo_t *cr, const char *xlab)
 	double x, y;
 	cairo_text_extents_t ext;
 	cairo_set_font_size(cr, 18.0);
+	cairo_set_source_rgb(cr, 0, 0, 0);
 	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 	cairo_text_extents(cr, xlab, &ext);
 	x = DIM_X / 2.0 - (ext.width / 2.0 + ext.x_bearing);
-	y = DIM_Y + ext.height * 3;
+	y = DIM_Y + ext.height * 2.5;
 	cairo_move_to(cr, x, y);
 	cairo_show_text(cr, xlab);
 }
 
-void draw_ylab(cairo_t *cr, const char *ylab)
+void draw_ylab(cairo_t *cr, const char *lab, double x, double canvas_height)
 {
-	cairo_save(cr);
-	cairo_set_font_size(cr, 18.0);
 	cairo_text_extents_t ext;
+	cairo_text_extents(cr, lab, &ext);
+	double y_center = canvas_height / 2.0;
+	double x_pos = x - (ext.height / 2.0);
+	double y_pos = y_center + (ext.width / 2.0);
+	cairo_save(cr);
+	cairo_translate(cr, x_pos, y_pos);
+	cairo_rotate(cr, -M_PI / 2.0);
+	cairo_move_to(cr, 0, 0);
 	cairo_set_source_rgb(cr, 87 / 255.0, 62 / 255.0, 166 / 255.0);
-	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-	cairo_translate(cr, MARGIN / 2.0, HEIGHT / 2.0); // translate origin to the center
-	cairo_rotate(cr, 3 * M_PI / 2.0);
-	cairo_text_extents(cr, ylab, &ext);
-	cairo_move_to(cr, MARGIN / 2.0 - ext.width / 2 * DIM_Y / DIM_X, -MARGIN * 1.2);
-	cairo_show_text(cr, ylab);
+	cairo_show_text(cr, lab);
 	cairo_restore(cr);
 }
 
-void draw_y2lab(cairo_t *cr, const char *y2lab)
+void draw_y2lab(cairo_t *cr, const char *lab, double x, double canvas_height)
 {
-	cairo_save(cr);
-	cairo_set_font_size(cr, 18.0);
 	cairo_text_extents_t ext;
+	cairo_text_extents(cr, lab, &ext);
+	double y_center = canvas_height / 2.0;
+	double x_pos = x + (ext.height / 2.0);
+	double y_pos = y_center - (ext.width / 2.0);
+	cairo_save(cr);
+	cairo_translate(cr, x_pos, y_pos);
+	cairo_rotate(cr, M_PI / 2.0);
+	cairo_move_to(cr, 0, 0);
+	cairo_set_font_size(cr, 18.0);
 	cairo_set_source_rgb(cr, 187 / 255.0, 12 / 255.0, 16 / 255.0);
 	cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-	cairo_translate(cr, MARGIN / 2.0, HEIGHT / 2.0); // translate origin to the center
-	cairo_rotate(cr, 3 * M_PI / 2.0);
-	cairo_text_extents(cr, y2lab, &ext);
-	cairo_move_to(cr, MARGIN / 2.0 - ext.width / 2 * DIM_Y / DIM_X, WIDTH - MARGIN * 1.75);
-	cairo_show_text(cr, y2lab);
+	cairo_show_text(cr, lab);
 	cairo_restore(cr);
 }
 
@@ -274,7 +279,7 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
 	draw_rrect(cr);
 	cairo_set_source_rgb (cr, 0, 0, 0);
-	cairo_translate(cr, MARGIN, MARGIN / 1);
+	cairo_translate(cr, MARGIN, MARGIN);
 	// axis labels
 	double x, y;
 	cairo_text_extents_t ext;
@@ -347,10 +352,10 @@ void do_drawing(cairo_t *cr, const int *is, const double *cis, const int n,
 	else
 		snprintf(ylab, NAME_MAX, "Frequency (10%s)", scale == 1e9 ? "⁹" :
 				(scale == 1e6 ? "⁶" : "³"));
-	draw_ylab(cr, ylab);
+	draw_ylab(cr, ylab, -MARGIN / 1.75, DIM_Y);
 	// y2lab
 	char y2lab[] = "Cumulative (%)";
-	draw_y2lab(cr, y2lab);
+	draw_y2lab(cr, y2lab, DIM_X + MARGIN / 2.0, DIM_Y);
 	cairo_save(cr);
 	cairo_scale(cr, DIM_X, DIM_Y);
 	draw_is(cr, is, cis, sp.peak, xmax);

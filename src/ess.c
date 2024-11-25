@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 		lrsd(is, MAX_IS, &sd);
 		cairo_surface_t *sf = NULL;
 		if (ends_with(arg->plot, ".svg"))
-			sf = cairo_svg_surface_create(arg->plot, WIDTH, HEIGHT);
+			sf = cairo_svg_surface_create(arg->plot, WIDTH * 1.02, HEIGHT);
 		else if (ends_with(arg->plot, ".png"))
 			sf = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, WIDTH, HEIGHT);
 		cairo_t *cr = cairo_create(sf);
