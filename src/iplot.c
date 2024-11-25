@@ -185,8 +185,6 @@ void draw_yticks(cairo_t *cr, const sp_t *sp, double *scale)
 	{
 		cairo_text_extents(cr, "m", &ext);
 		double x_offset = ext.width;
-		// get precision of step
-		int p = 0;
 		// check precision
 		int pc = 0;
 		char *pp = NULL;
@@ -198,7 +196,7 @@ void draw_yticks(cairo_t *cr, const sp_t *sp, double *scale)
 		}
 		for (i = 0; i <= sp->peak / sp->step; ++i)
 		{
-			sprintf(buf, "%.*f", p, i * sp->step / (*scale));
+			sprintf(buf, "%.*f", pc, i * sp->step / (*scale));
 			cairo_text_extents(cr, buf, &ext);
 			x = -ext.width - x_offset / 2.5;
 			y = i * sp->step / sp->peak;
