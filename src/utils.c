@@ -117,7 +117,6 @@ double nice_interval(const double x, const double n)
 {
 	double rough_intv = x / n;
 	double magnitude = pow(10.0, floor(log10(rough_intv)));
-	printf("m: %.32f\n", magnitude);
 	double nice_intv;
 	if (rough_intv / magnitude <= 1)
 		nice_intv = 1 * magnitude;
@@ -136,17 +135,8 @@ void step_and_peak(const double n, sp_t *sp)
 	sp->step = nice_interval(n, 10);
 	double i = 0.0f, j;
 	int k, divs[] = {1, 2, 4, 5, 8, 10, 20};
-	printf("s: %.32f\tp: %.32f\n", sp->step, sp->peak);
 	while (i < sp->peak)
 		i += sp->step;
-	printf("i: %.32f %.32f\n", i, i - sp->step);
-	if (i - sp->step == sp->peak)
-	{
-		printf("i: %f %f\n", i, i - sp->step);
-		i -= sp->step;
-		printf("i: %f %f\n", i, i - sp->step);
-	}
-	printf(" i: %g\n", i);
 	while ((j = i / sp->step) <= 20)
 	{
 		for (k = 0; k < 7; ++k)
